@@ -239,11 +239,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_web_plugins:
-    dependency: transitive
-    description: flutter
-    source: sdk
-    version: "0.0.0"
   frontend_server_client:
     dependency: transitive
     description:
@@ -306,18 +301,18 @@ packages:
     dependency: transitive
     description:
       name: isar
-      sha256: def9e70ff7efc4d8c1f07740ae618e0f95e0895428e4471914e466e3e68ffc6d
+      sha256: ebf74d87c400bd9f7da14acb31932b50c2407edbbd40930da3a6c2a8143f85a8
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0-dev.10"
+    version: "4.0.0-dev.14"
   isar_flutter_libs:
     dependency: transitive
     description:
       name: isar_flutter_libs
-      sha256: "4304620dee4363b3887c7c4497d10a9fcbe64d987233684dc328bdd25984191c"
+      sha256: "04a3f4035e213ddb6e78d0132a7c80296a085c2088c2a761b4a42ee5add36983"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0-dev.10"
+    version: "4.0.0-dev.14"
   js:
     dependency: transitive
     description:
