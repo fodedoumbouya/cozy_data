@@ -1,5 +1,4 @@
-// import 'package:cozy_data/cozy_data.dart';
-import 'package:isar/isar.dart';
+import 'package:cozy_data/cozy_data.dart';
 
 part 'person.g.dart';
 

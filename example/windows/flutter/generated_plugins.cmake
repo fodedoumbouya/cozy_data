@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  cozy_data
   isar_flutter_libs
 )
 
