@@ -28,10 +28,6 @@ const PersonSchema = IsarGeneratedSchema(
         name: 'age',
         type: IsarType.long,
       ),
-      IsarPropertySchema(
-        name: 'email',
-        type: IsarType.string,
-      ),
     ],
     indexes: [],
   ),
@@ -54,14 +50,6 @@ int serializePerson(IsarWriter writer, Person object) {
     }
   }
   IsarCore.writeLong(writer, 2, object.age ?? -9223372036854775808);
-  {
-    final value = object.email;
-    if (value == null) {
-      IsarCore.writeNull(writer, 3);
-    } else {
-      IsarCore.writeString(writer, 3, value);
-    }
-  }
   return object.id;
 }
 
@@ -80,13 +68,10 @@ Person deserializePerson(IsarReader reader) {
       _age = value;
     }
   }
-  final String? _email;
-  _email = IsarCore.readString(reader, 3);
   final object = Person(
-    _id,
-    _name,
-    _age,
-    _email,
+    id: _id,
+    name: _name,
+    age: _age,
   );
   return object;
 }
@@ -107,8 +92,6 @@ dynamic deserializePersonProp(IsarReader reader, int property) {
           return value;
         }
       }
-    case 3:
-      return IsarCore.readString(reader, 3);
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -119,7 +102,6 @@ sealed class _PersonUpdate {
     required int id,
     String? name,
     int? age,
-    String? email,
   });
 }
 
@@ -133,14 +115,12 @@ class _PersonUpdateImpl implements _PersonUpdate {
     required int id,
     Object? name = ignore,
     Object? age = ignore,
-    Object? email = ignore,
   }) {
     return collection.updateProperties([
           id
         ], {
           if (name != ignore) 1: name as String?,
           if (age != ignore) 2: age as int?,
-          if (email != ignore) 3: email as String?,
         }) >
         0;
   }
@@ -151,7 +131,6 @@ sealed class _PersonUpdateAll {
     required List<int> id,
     String? name,
     int? age,
-    String? email,
   });
 }
 
@@ -165,12 +144,10 @@ class _PersonUpdateAllImpl implements _PersonUpdateAll {
     required List<int> id,
     Object? name = ignore,
     Object? age = ignore,
-    Object? email = ignore,
   }) {
     return collection.updateProperties(id, {
       if (name != ignore) 1: name as String?,
       if (age != ignore) 2: age as int?,
-      if (email != ignore) 3: email as String?,
     });
   }
 }
@@ -185,7 +162,6 @@ sealed class _PersonQueryUpdate {
   int call({
     String? name,
     int? age,
-    String? email,
   });
 }
 
@@ -199,12 +175,10 @@ class _PersonQueryUpdateImpl implements _PersonQueryUpdate {
   int call({
     Object? name = ignore,
     Object? age = ignore,
-    Object? email = ignore,
   }) {
     return query.updateProperties(limit: limit, {
       if (name != ignore) 1: name as String?,
       if (age != ignore) 2: age as int?,
-      if (email != ignore) 3: email as String?,
     });
   }
 }
@@ -225,14 +199,12 @@ class _PersonQueryBuilderUpdateImpl implements _PersonQueryUpdate {
   int call({
     Object? name = ignore,
     Object? age = ignore,
-    Object? email = ignore,
   }) {
     final q = query.build();
     try {
       return q.updateProperties(limit: limit, {
         if (name != ignore) 1: name as String?,
         if (age != ignore) 2: age as int?,
-        if (email != ignore) 3: email as String?,
       });
     } finally {
       q.close();
@@ -603,190 +575,6 @@ extension PersonQueryFilter on QueryBuilder<Person, Person, QFilterCondition> {
       );
     });
   }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 3));
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailIsNotNull() {
-    return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 3));
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EqualCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailGreaterThan(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailGreaterThanOrEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterOrEqualCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailLessThan(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailLessThanOrEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessOrEqualCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailBetween(
-    String? lower,
-    String? upper, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        BetweenCondition(
-          property: 3,
-          lower: lower,
-          upper: upper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        StartsWithCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EndsWithCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        ContainsCondition(
-          property: 3,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        MatchesCondition(
-          property: 3,
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const EqualCondition(
-          property: 3,
-          value: '',
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterFilterCondition> emailIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const GreaterCondition(
-          property: 3,
-          value: '',
-        ),
-      );
-    });
-  }
 }
 
 extension PersonQueryObject on QueryBuilder<Person, Person, QFilterCondition> {}
@@ -836,27 +624,6 @@ extension PersonQuerySortBy on QueryBuilder<Person, Person, QSortBy> {
       return query.addSortBy(2, sort: Sort.desc);
     });
   }
-
-  QueryBuilder<Person, Person, QAfterSortBy> sortByEmail(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(
-        3,
-        caseSensitive: caseSensitive,
-      );
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterSortBy> sortByEmailDesc(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(
-        3,
-        sort: Sort.desc,
-        caseSensitive: caseSensitive,
-      );
-    });
-  }
 }
 
 extension PersonQuerySortThenBy on QueryBuilder<Person, Person, QSortThenBy> {
@@ -897,20 +664,6 @@ extension PersonQuerySortThenBy on QueryBuilder<Person, Person, QSortThenBy> {
       return query.addSortBy(2, sort: Sort.desc);
     });
   }
-
-  QueryBuilder<Person, Person, QAfterSortBy> thenByEmail(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(3, caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterSortBy> thenByEmailDesc(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(3, sort: Sort.desc, caseSensitive: caseSensitive);
-    });
-  }
 }
 
 extension PersonQueryWhereDistinct on QueryBuilder<Person, Person, QDistinct> {
@@ -924,13 +677,6 @@ extension PersonQueryWhereDistinct on QueryBuilder<Person, Person, QDistinct> {
   QueryBuilder<Person, Person, QAfterDistinct> distinctByAge() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(2);
-    });
-  }
-
-  QueryBuilder<Person, Person, QAfterDistinct> distinctByEmail(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(3, caseSensitive: caseSensitive);
     });
   }
 }
@@ -953,12 +699,6 @@ extension PersonQueryProperty1 on QueryBuilder<Person, Person, QProperty> {
       return query.addProperty(2);
     });
   }
-
-  QueryBuilder<Person, String?, QAfterProperty> emailProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(3);
-    });
-  }
 }
 
 extension PersonQueryProperty2<R> on QueryBuilder<Person, R, QAfterProperty> {
@@ -977,12 +717,6 @@ extension PersonQueryProperty2<R> on QueryBuilder<Person, R, QAfterProperty> {
   QueryBuilder<Person, (R, int?), QAfterProperty> ageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
-    });
-  }
-
-  QueryBuilder<Person, (R, String?), QAfterProperty> emailProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(3);
     });
   }
 }
@@ -1004,12 +738,6 @@ extension PersonQueryProperty3<R1, R2>
   QueryBuilder<Person, (R1, R2, int?), QOperations> ageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
-    });
-  }
-
-  QueryBuilder<Person, (R1, R2, String?), QOperations> emailProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(3);
     });
   }
 }

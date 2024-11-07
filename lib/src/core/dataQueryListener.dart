@@ -51,6 +51,7 @@ class DataQueryListener<T> with ChangeNotifier {
   /// if not provided, a default controller is created.
   DataQueryListener({
     required Isar isar,
+    // required bool isIdIntType,
     Filter? filterCondition,
     int? limit,
     int? offset,
@@ -59,6 +60,7 @@ class DataQueryListener<T> with ChangeNotifier {
     ObjectFilter? objectFilter,
     DataQueryController<T>? controller,
   })  : _isar = isar,
+        // _isIdIntType = isIdIntType,
         _limit = limit,
         _offset = offset,
         _distinctByProperties = distinctByProperties,
@@ -89,7 +91,14 @@ class DataQueryListener<T> with ChangeNotifier {
   /// Throws an [Exception] if the schema for [T] is not registered.
   Future<void> _initializeStream() async {
     try {
-      final collection = _isar.collection<int, T>();
+      final isIdIntType = await Utils.getIdIsInit<T>();
+
+      IsarCollection<dynamic, T> collection;
+      if (isIdIntType) {
+        collection = _isar.collection<int, T>();
+      } else {
+        collection = _isar.collection<String, T>();
+      }
       // Initial fetch
       _queryBuilder = await _fetch();
 
@@ -116,7 +125,14 @@ class DataQueryListener<T> with ChangeNotifier {
   /// Uses the provided parameters such as [sortByProperties], [distinctByProperties],
   /// [filterCondition], and [objectFilter] to define the query builder.
   Future<QueryBuilder<T, T, QAfterFilterCondition>> _fetch() async {
-    final collection = _isar.collection<int, T>();
+    IsarCollection<dynamic, T> collection;
+
+    final isIdIntType = await Utils.getIdIsInit<T>();
+    if (isIdIntType) {
+      collection = _isar.collection<int, T>();
+    } else {
+      collection = _isar.collection<String, T>();
+    }
     return QueryBuilder.apply<T, T, QAfterFilterCondition>(collection.where(),
         (query) {
       query = query.copyWith(

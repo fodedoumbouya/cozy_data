@@ -9,11 +9,7 @@ class Person {
   String? name;
   int? age;
 
-  // @Index(type: IndexType.value)
-  String? email;
-
-  // List<Address>? addresses;
-  Person(this.id, this.name, this.age, this.email);
+  Person({required this.id, this.name, this.age});
 }
 
 // @embedded

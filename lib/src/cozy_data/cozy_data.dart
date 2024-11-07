@@ -29,7 +29,11 @@ class CozyData {
   static final _queryCache = <String, DataQueryListener<dynamic>>{};
   static bool _isInitialized = false;
   static Completer<void>? _initializer;
+  static bool _idTypeInt = false;
+  static const bool _isIdInitialized = false;
+
   static List<IsarGeneratedSchema> schema = [];
+  // static Type _idType
 
   // Private constructor to prevent instantiation
   CozyData._();
@@ -82,6 +86,7 @@ class CozyData {
         name: name,
       );
       _isInitialized = true;
+      await Utils.idsTypeIsInt(isar: _isar!);
       _initializer!.complete();
     } catch (e) {
       _initializer!.completeError(e);
@@ -91,9 +96,12 @@ class CozyData {
   }
 
   /// Ensures the Isar instance is initialized before performing any operations.
-  static Future<void> _ensureInitialized() async {
+  static Future<void> _ensureInitialized<T>() async {
     if (!_isInitialized) {
       await initialize(schemas: schema);
+    }
+    if (!_isIdInitialized) {
+      _idTypeInt = await Utils.getIdIsInit<T>();
     }
   }
 
@@ -145,12 +153,11 @@ class CozyData {
     ObjectFilter? objectFilters,
     DataQueryController<T>? controller,
   }) {
-    _ensureInitialized();
-
     if (T == dynamic) {
       throw Exception(
           'Cannot query without model Data Type. Please provide a concrete model type.\nExample: CozyData.query<ModelData>()');
     }
+    _ensureInitialized<T>();
 
     final queryKey =
         '${T.toString()}};${limit ?? 0};${offset ?? 0};${filterCondition ?? ''};${sortByProperties ?? ''};${distinctByProperties ?? ''};${objectFilters ?? ''}';
@@ -171,9 +178,14 @@ class CozyData {
 
   /// Saves a model [T] to the database, either inserting or updating.
   static Future<T> save<T>(T model) async {
-    await _ensureInitialized();
+    await _ensureInitialized<T>();
+
     await _isar!.write((isar) async {
-      isar.collection<int, T>().put(model);
+      if (_idTypeInt) {
+        isar.collection<int, T>().put(model);
+      } else {
+        isar.collection<String, T>().put(model);
+      }
     });
     return model;
   }
@@ -187,8 +199,15 @@ class CozyData {
     List<DistinctProperty>? distinctByProperties,
     ObjectFilter? objectFilter,
   }) async {
-    await _ensureInitialized();
-    final collection = _isar!.collection<int, T>();
+    await _ensureInitialized<T>();
+
+    IsarCollection<dynamic, T> collection;
+    if (_idTypeInt) {
+      collection = _isar!.collection<int, T>();
+    } else {
+      collection = _isar!.collection<String, T>();
+    }
+
     final q = QueryBuilder.apply<T, T, QAfterFilterCondition>(
         collection.where(), (query) {
       query = query.copyWith(
@@ -211,15 +230,25 @@ class CozyData {
   }
 
   /// Deletes a specific model [T] by its unique identifier.
-  static Future<void> delete<T>(int id) async {
+  static Future<void> delete<T>(dynamic id) async {
     if (T == dynamic) {
       throw Exception(
           'Cannot delte without model Data Type. Please provide a concrete model type.Example: CozyData.delete<ModelData>(id)');
     }
-    await _ensureInitialized();
+
+    await _ensureInitialized<T>();
+
+    if (_idTypeInt && id is! int) {
+      throw Exception(
+          'Id type of ${T.toString()} must be ${_idTypeInt ? 'int' : 'string'}');
+    }
 
     await _isar!.write((isar) async {
-      isar.collection<int, T>().delete(id);
+      if (_idTypeInt) {
+        isar.collection<int, T>().delete(id);
+      } else {
+        isar.collection<String, T>().delete(id);
+      }
     });
   }
 
@@ -229,10 +258,14 @@ class CozyData {
       throw Exception(
           'Cannot detele without model Data Type. Please provide a concrete model type.Example: CozyData.deleteAll<ModelData>()');
     }
-    await _ensureInitialized();
+    await _ensureInitialized<T>();
 
     await _isar!.write((isar) async {
-      isar.collection<int, T>().clear();
+      if (_idTypeInt) {
+        isar.collection<int, T>().clear();
+      } else {
+        isar.collection<String, T>().clear();
+      }
     });
   }
 }
