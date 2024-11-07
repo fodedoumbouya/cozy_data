@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cozy_data/cozy_data.dart';
 import 'package:flutter/material.dart';
 
@@ -49,7 +47,7 @@ class _PersonListViewState extends State<PersonListView> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SimpleExample()),
+                MaterialPageRoute(builder: (context) => const SimpleExample()),
               );
             },
             child: const Text("Simple Example"),
