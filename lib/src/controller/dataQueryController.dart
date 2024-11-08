@@ -31,8 +31,7 @@ class DataQueryController<T> {
   /// This allows external code to read the current query structure,
   /// useful for custom query manipulations or inspections.
   /// Throws an error if the controller is not attached to a listener.
-  QueryBuilder<T, T, QAfterFilterCondition> get queryBuilder =>
-      _listener!._queryBuilder;
+  IsarQuery<T> get queryBuilder => _listener!._queryBuilder;
 
   /// Modifies the current query using [applyQuery] function.
   ///
@@ -52,11 +51,35 @@ class DataQueryController<T> {
   ///   return queryBuilder.filter(..);
   /// });
   /// ```
-  Future<void> applyQuery(
+  Future<void> applyFilterQueryPredicate(
       QueryBuilder<T, T, QAfterFilterCondition> Function(
               QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
           modifier) async {
-    _listener!._queryBuilder = modifier(await _listener!._fetch());
+    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
+    await _refresh();
+  }
+
+  Future<void> applySortByQueryPredicate(
+      QueryBuilder<T, T, QAfterSortBy> Function(
+              QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
+          modifier) async {
+    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
+    await _refresh();
+  }
+
+  Future<void> applyDistinctQueryPredicate(
+      QueryBuilder<T, T, QAfterDistinct> Function(
+              QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
+          modifier) async {
+    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
+    await _refresh();
+  }
+
+  Future<void> applyPropertyQueryPredicate(
+      QueryBuilder<T, T, QAfterProperty> Function(
+              QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
+          modifier) async {
+    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
     await _refresh();
   }
 

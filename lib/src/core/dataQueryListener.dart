@@ -29,7 +29,7 @@ class DataQueryListener<T> with ChangeNotifier {
   List<T> _items = [];
   StreamSubscription? _subscription;
 
-  late QueryBuilder<T, T, QAfterFilterCondition> _queryBuilder;
+  late IsarQuery<T> _queryBuilder;
   late final DataQueryController<T> controller;
 
   /// Provides a read-only list of the queried items.
@@ -100,7 +100,7 @@ class DataQueryListener<T> with ChangeNotifier {
         collection = _isar.collection<String, T>();
       }
       // Initial fetch
-      _queryBuilder = await _fetch();
+      _queryBuilder = (await _fetch()).build();
 
       // Initial data load
       await _refreshData();

@@ -11,6 +11,9 @@ class Utils {
   static Future<void> idsTypeIsInt({required Isar isar}) async {
     for (var i = 0; i < isar.schemas.length; i++) {}
     for (var schema in isar.schemas) {
+      if (schema.embedded) {
+        continue;
+      }
       final idType = schema.properties
           .firstWhere((element) => element.name == 'id',
               orElse: () => schema.getPropertyByIndex(0))
