@@ -1,7 +1,7 @@
 import 'package:cozy_data/cozy_data.dart';
 import 'package:flutter/material.dart';
 
-import '../person.dart';
+import '../model/person.dart';
 
 class EditableListTile extends StatefulWidget {
   final Person person;

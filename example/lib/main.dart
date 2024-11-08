@@ -1,14 +1,15 @@
 import 'package:cozy_data/cozy_data.dart';
+import 'package:cozy_data_example/full_example/full_example.dart';
+import 'package:cozy_data_example/full_example/model/programmer.dart';
 import 'package:flutter/material.dart';
 
-import 'person.dart';
-import 'simple_example.dart';
+import 'simple_example/model/person.dart';
+import 'simple_example/simple_example.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await CozyData.initialize(
-    schemas: [PersonSchema],
-  );
+      schemas: [PersonSchema, ProgrammerSchema], inspector: true);
   runApp(const MyApp());
 }
 
@@ -51,6 +52,16 @@ class _PersonListViewState extends State<PersonListView> {
               );
             },
             child: const Text("Simple Example"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const RecipeListScreen()),
+              );
+            },
+            child: const Text("Full Example"),
           ),
         ],
       ),

@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:cozy_data/cozy_data.dart';
 import 'package:flutter/material.dart';
 
-import 'person.dart';
-import 'utils/utils.dart';
+import 'model/person.dart';
+import '../utils/utils.dart';
 import 'widgets/editableListTile.dart';
 
 class SimpleExample extends StatelessWidget {
