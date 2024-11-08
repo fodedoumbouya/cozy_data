@@ -11,7 +11,9 @@ class RecipeListScreen extends StatelessWidget {
 
   /// Query  for the Person Data from CozyData
   static final DataQueryListener<Programmer> _programmerQuery =
-      CozyData.queryListener<Programmer>(controller: controller);
+      CozyData.queryListener<Programmer>(
+    controller: controller,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +50,15 @@ class RecipeListScreen extends StatelessWidget {
                 placeholder: 'Search',
                 backgroundColor: const Color.fromRGBO(227, 227, 233, 1),
                 onChanged: (value) async {
-                  await controller.applyFilterQueryPredicate((queryBuilder) {
-                    return queryBuilder.nameContains(value);
-                  });
+                  await controller.queryPredicate(
+                    filterModifier: (filterQuery) =>
+                        filterQuery.nameContains(value),
+                    // distinctModifier: (distinctQuery) =>
+                    //     distinctQuery.distinctByName(),
+                    sortModifier: (sortByQuery) => sortByQuery.sortByName(),
+                    // limit: 2,
+                    // offset: 0
+                  );
                 },
               ),
             ),

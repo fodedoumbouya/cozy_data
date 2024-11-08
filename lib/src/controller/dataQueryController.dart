@@ -9,9 +9,8 @@ part of cozy_data;
 /// a [DataQueryListener] instance, allowing control over the query builder
 /// and refreshing data based on modified query conditions.
 ///
-/// Use [applyQuery] to dynamically adjust the query with additional filters
-/// or sort conditions, or call [refresh] to reload the data from the
-/// underlying Isar collection. This class is generic and works with any data
+/// Use [queryPredicate] to dynamically adjust the query with additional filters,
+/// sort conditions, or distinct conditions. This class is generic and works with any data
 /// model type `T`.
 /// {@endtemplate}
 class DataQueryController<T> {
@@ -33,61 +32,74 @@ class DataQueryController<T> {
   /// Throws an error if the controller is not attached to a listener.
   IsarQuery<T> get queryBuilder => _listener!._queryBuilder;
 
-  /// Modifies the current query using [applyQuery] function.
+  /// Modifies the current query using [queryPredicate] function.
   ///
-  /// [applyQuery] is a function that receives the current query builder
-  /// and returns a modified version of it. This allows dynamic
-  /// reconfiguration of the query parameters, such as adding filters
-  /// or adjusting sorting.
+  /// [queryPredicate] allows dynamic reconfiguration of the query parameters,
+  /// such as adding filters, adjusting sorting, or applying distinct conditions.
   ///
   /// After modifying the query, it triggers a data refresh to
   /// immediately reflect the updated results.
   ///
   /// Example:
   /// ```dart
-  /// controller.applyQuery((queryBuilder) => queryBuilder.filter(...));
-  ///                   or
-  /// controller.applyQuery((queryBuilder) {
-  ///   return queryBuilder.filter(..);
-  /// });
+  /// await controller.queryPredicate(
+  ///   filterModifier: (filterQuery) =>
+  ///    filterQuery.nameContains(value),
+  ///    distinctModifier: (distinctQuery) =>
+  ///    distinctQuery.distinctByName(),
+  ///    sortModifier: (sortByQuery) => sortByQuery.sortByName(),
+  ///    limit: 2,
+  ///    offset: 0);
   /// ```
-  Future<void> applyFilterQueryPredicate(
-      QueryBuilder<T, T, QAfterFilterCondition> Function(
-              QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
-          modifier) async {
-    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
-    await _refresh();
-  }
-
-  Future<void> applySortByQueryPredicate(
+  Future<void> queryPredicate(
+      {QueryBuilder<T, T, QAfterFilterCondition> Function(
+              QueryBuilder<T, T, QAfterFilterCondition> filterQuery)?
+          filterModifier,
       QueryBuilder<T, T, QAfterSortBy> Function(
-              QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
-          modifier) async {
-    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
-    await _refresh();
-  }
-
-  Future<void> applyDistinctQueryPredicate(
+              QueryBuilder<T, T, QAfterFilterCondition> sortByQuery)?
+          sortModifier,
       QueryBuilder<T, T, QAfterDistinct> Function(
-              QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
-          modifier) async {
-    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
-    await _refresh();
-  }
-
-  Future<void> applyPropertyQueryPredicate(
-      QueryBuilder<T, T, QAfterProperty> Function(
-              QueryBuilder<T, T, QAfterFilterCondition> queryBuilder)
-          modifier) async {
-    _listener!._queryBuilder = modifier(await _listener!._fetch()).build();
-    await _refresh();
+              QueryBuilder<T, T, QAfterFilterCondition> distinctQuery)?
+          distinctModifier,
+      int? limit,
+      int? offset}) async {
+    // Ensure that either distinctModifier or sortModifier is null, or both are null.
+    // This assertion prevents both modifiers from being non-null simultaneously.
+    assert(
+        ((distinctModifier == null && sortModifier != null) ||
+            (distinctModifier != null && sortModifier == null) ||
+            (distinctModifier == null && sortModifier == null)),
+        "distinctModifier and sortModifier must not be different from null at the same time");
+    QueryBuilder<T, T, QAfterFilterCondition> query = await _listener!._fetch();
+    if (sortModifier != null) {
+      final qAfter = sortModifier(query);
+      _listener!._queryBuilder = qAfter.build();
+      query = QueryBuilder.apply<T, T, QAfterFilterCondition>(qAfter, (query) {
+        return query;
+      });
+    }
+    if (distinctModifier != null) {
+      final qAfter = distinctModifier(query);
+      _listener!._queryBuilder = qAfter.build();
+      query = QueryBuilder.apply<T, T, QAfterFilterCondition>(qAfter, (query) {
+        return query;
+      });
+    }
+    if (filterModifier != null) {
+      final qAfter = filterModifier(query);
+      _listener!._queryBuilder = qAfter.build();
+      query = QueryBuilder.apply<T, T, QAfterFilterCondition>(qAfter, (query) {
+        return query;
+      });
+    }
+    await _refresh(limit: limit, offset: offset);
   }
 
   /// Refreshes the data from the current query without modifications.
   ///
   /// This is useful when data changes in the underlying collection,
   /// allowing the listener to reload and notify its observers.
-  Future<void> _refresh() async {
-    return await _listener!._refreshData();
+  Future<void> _refresh({int? limit, int? offset}) async {
+    return await _listener!._refreshData(limit: limit, offset: offset);
   }
 }

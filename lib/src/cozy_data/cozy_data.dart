@@ -33,7 +33,6 @@ class CozyData {
   static const bool _isIdInitialized = false;
 
   static List<IsarGeneratedSchema> schema = [];
-  // static Type _idType
 
   // Private constructor to prevent instantiation
   CozyData._();
@@ -147,10 +146,6 @@ class CozyData {
   static DataQueryListener<T> queryListener<T>({
     int? limit,
     int? offset,
-    Filter? filterCondition,
-    List<SortProperty>? sortByProperties,
-    List<DistinctProperty>? distinctByProperties,
-    ObjectFilter? objectFilters,
     DataQueryController<T>? controller,
   }) {
     if (T == dynamic) {
@@ -159,19 +154,14 @@ class CozyData {
     }
     _ensureInitialized<T>();
 
-    final queryKey =
-        '${T.toString()}};${limit ?? 0};${offset ?? 0};${filterCondition ?? ''};${sortByProperties ?? ''};${distinctByProperties ?? ''};${objectFilters ?? ''}';
+    final queryKey = '${T.toString()}};${limit ?? 0};${offset ?? 0}';
     return _queryCache.putIfAbsent(
       queryKey,
       () => DataQueryListener<T>(
         isar: _isar!,
         controller: controller,
-        filterCondition: filterCondition,
         limit: limit,
         offset: offset,
-        sortByProperties: sortByProperties,
-        distinctByProperties: distinctByProperties,
-        objectFilter: objectFilters,
       ),
     ) as DataQueryListener<T>;
   }
@@ -233,7 +223,7 @@ class CozyData {
   static Future<void> delete<T>(dynamic id) async {
     if (T == dynamic) {
       throw Exception(
-          'Cannot delte without model Data Type. Please provide a concrete model type.Example: CozyData.delete<ModelData>(id)');
+          'Cannot delete without model Data Type. Please provide a concrete model type.Example: CozyData.delete<ModelData>(id)');
     }
 
     await _ensureInitialized<T>();
@@ -256,7 +246,7 @@ class CozyData {
   static Future<void> deleteAll<T>() async {
     if (T == dynamic) {
       throw Exception(
-          'Cannot detele without model Data Type. Please provide a concrete model type.Example: CozyData.deleteAll<ModelData>()');
+          'Cannot delete without model Data Type. Please provide a concrete model type.Example: CozyData.deleteAll<ModelData>()');
     }
     await _ensureInitialized<T>();
 

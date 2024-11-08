@@ -22,10 +22,6 @@ class DataQueryListener<T> with ChangeNotifier {
   final Isar _isar;
   final int? _limit;
   final int? _offset;
-  final List<SortProperty>? _sortByProperties;
-  final List<DistinctProperty>? _distinctByProperties;
-  final ObjectFilter? _objectFilter;
-  final Filter? _filterCondition;
   List<T> _items = [];
   StreamSubscription? _subscription;
 
@@ -41,32 +37,18 @@ class DataQueryListener<T> with ChangeNotifier {
   ///
   /// The [isar] parameter is required to access the Isar collection.
   /// Optional parameters include:
-  /// - [filterCondition]: Filter criteria for the query.
   /// - [limit] and [offset]: Pagination controls.
-  /// - [sortByProperties]: Sorting order for the results.
-  /// - [distinctByProperties]: Distinct property constraints.
-  /// - [objectFilter]: Object-specific filter constraints.
   ///
   /// A [controller] can be passed in to customize query behaviors;
   /// if not provided, a default controller is created.
   DataQueryListener({
     required Isar isar,
-    // required bool isIdIntType,
-    Filter? filterCondition,
     int? limit,
     int? offset,
-    List<SortProperty>? sortByProperties,
-    List<DistinctProperty>? distinctByProperties,
-    ObjectFilter? objectFilter,
     DataQueryController<T>? controller,
   })  : _isar = isar,
-        // _isIdIntType = isIdIntType,
         _limit = limit,
-        _offset = offset,
-        _distinctByProperties = distinctByProperties,
-        _sortByProperties = sortByProperties,
-        _objectFilter = objectFilter,
-        _filterCondition = filterCondition {
+        _offset = offset {
     this.controller = controller ?? DataQueryController<T>();
     this.controller._attach(this);
     _initializeStream();
@@ -77,8 +59,9 @@ class DataQueryListener<T> with ChangeNotifier {
   /// This method executes the query defined in [_queryBuilder], retrieves
   /// the results with any specified [limit] and [offset], and updates the
   /// [items] list with fresh data. Notifies listeners after updating.
-  Future<void> _refreshData() async {
-    _items = _queryBuilder.findAll(limit: _limit, offset: _offset);
+  Future<void> _refreshData({int? limit, int? offset}) async {
+    _items = _queryBuilder.findAll(
+        limit: limit ?? _limit, offset: offset ?? _offset);
     notifyListeners();
   }
 
@@ -121,9 +104,6 @@ class DataQueryListener<T> with ChangeNotifier {
   }
 
   /// Creates a query builder with the specified filter and sort conditions.
-  ///
-  /// Uses the provided parameters such as [sortByProperties], [distinctByProperties],
-  /// [filterCondition], and [objectFilter] to define the query builder.
   Future<QueryBuilder<T, T, QAfterFilterCondition>> _fetch() async {
     IsarCollection<dynamic, T> collection;
 
@@ -135,16 +115,7 @@ class DataQueryListener<T> with ChangeNotifier {
     }
     return QueryBuilder.apply<T, T, QAfterFilterCondition>(collection.where(),
         (query) {
-      query = query.copyWith(
-          sortByProperties: _sortByProperties,
-          distinctByProperties: _distinctByProperties);
-      if (_filterCondition != null) {
-        return query.addFilterCondition(_filterCondition);
-      } else if (_objectFilter != null) {
-        return query.addFilterCondition(_objectFilter);
-      } else {
-        return query;
-      }
+      return query;
     });
   }
 
