@@ -10,7 +10,7 @@ part of cozy_data;
 /// fetching data initially and setting up a stream to observe any changes.
 /// Use this for real-time updates in your UI components.
 ///
-/// The [DataQueryListener] requires a reference to an [Isar] instance
+/// The [CozyQueryListener] requires a reference to an [Isar] instance
 /// and allows optional parameters to specify query filters and limits.
 /// Use the [controller] to attach custom behaviors or additional controls.
 ///
@@ -18,7 +18,7 @@ part of cozy_data;
 /// at initialization and listens for changes in the collection using the
 /// Isar watch function.
 /// {@endtemplate}
-class DataQueryListener<T> with ChangeNotifier {
+class CozyQueryListener<T> with ChangeNotifier {
   final Isar _isar;
   final int? _limit;
   final int? _offset;
@@ -26,12 +26,12 @@ class DataQueryListener<T> with ChangeNotifier {
   StreamSubscription? _subscription;
 
   late IsarQuery<T> _queryBuilder;
-  late final DataQueryController<T> controller;
+  late final CozyQueryController<T> controller;
 
   /// Provides a read-only list of the queried items.
   List<T> get items => _items;
 
-  /// Constructs a [DataQueryListener] with optional query parameters.
+  /// Constructs a [CozyQueryListener] with optional query parameters.
   ///
   /// {@macro data_query_listener}
   ///
@@ -41,15 +41,15 @@ class DataQueryListener<T> with ChangeNotifier {
   ///
   /// A [controller] can be passed in to customize query behaviors;
   /// if not provided, a default controller is created.
-  DataQueryListener({
+  CozyQueryListener({
     required Isar isar,
     int? limit,
     int? offset,
-    DataQueryController<T>? controller,
+    CozyQueryController<T>? controller,
   })  : _isar = isar,
         _limit = limit,
         _offset = offset {
-    this.controller = controller ?? DataQueryController<T>();
+    this.controller = controller ?? CozyQueryController<T>();
     this.controller._attach(this);
     _initializeStream();
   }

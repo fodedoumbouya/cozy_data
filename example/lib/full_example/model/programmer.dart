@@ -3,22 +3,17 @@ import 'package:cozy_data/cozy_data.dart';
 part 'programmer.g.dart';
 
 @collection
-class Programmer {
+class Recipe {
   final int id;
-
   String name;
-  String? language;
-  List<FavoriteLanguage>? favoriteLanguages;
+  List<Ingredients>? ingredients;
 
-  Programmer(
-      {required this.id,
-      required this.name,
-      this.language,
-      this.favoriteLanguages});
+  Recipe({required this.id, required this.name, this.ingredients});
 }
 
 @embedded
-class FavoriteLanguage {
-  String? language;
-  String? framework;
+class Ingredients {
+  String name;
+  int quantity;
+  Ingredients({required this.name, required this.quantity});
 }

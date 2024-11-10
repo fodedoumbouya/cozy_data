@@ -1,4 +1,5 @@
 import 'package:cozy_data/cozy_data.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../model/person.dart';
@@ -59,60 +60,73 @@ class _EditableListTileState extends State<EditableListTile> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: isEditingName
-          ? TextField(
-              controller: _nameController,
-              autofocus: true,
-              onSubmitted: (_) => _saveName(),
-              onEditingComplete: _saveName,
-              decoration: const InputDecoration(
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                isDense: true,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: CupertinoColors.white,
+        borderRadius: BorderRadius.circular(13),
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: ListTile(
+        title: isEditingName
+            ? TextField(
+                controller: _nameController,
+                autofocus: true,
+                onSubmitted: (_) => _saveName(),
+                onEditingComplete: _saveName,
+                decoration: const InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                  isDense: true,
+                ),
+              )
+            : GestureDetector(
+                onTap: () {
+                  if (!isEditingAge) {
+                    setState(() => isEditingName = true);
+                  }
+                },
+                child: Text(_nameController.text),
               ),
-            )
-          : GestureDetector(
-              onTap: () {
-                if (!isEditingAge) {
-                  setState(() => isEditingName = true);
-                }
-              },
-              child: Text(_nameController.text),
-            ),
-      subtitle: isEditingAge
-          ? TextField(
-              controller: _ageController,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              onSubmitted: (_) => _saveAge(),
-              onEditingComplete: () => _saveAge(),
-              decoration: const InputDecoration(
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                isDense: true,
+        subtitle: isEditingAge
+            ? TextField(
+                controller: _ageController,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => _saveAge(),
+                onEditingComplete: () => _saveAge(),
+                decoration: const InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                  isDense: true,
+                ),
+              )
+            : GestureDetector(
+                onTap: () {
+                  if (!isEditingName) {
+                    setState(() => isEditingAge = true);
+                  }
+                },
+                child: Text(_ageController.text),
               ),
-            )
-          : GestureDetector(
-              onTap: () {
-                if (!isEditingName) {
-                  setState(() => isEditingAge = true);
-                }
-              },
-              child: Text(_ageController.text),
-            ),
-      trailing: IconButton(
-        icon:
-            Icon((isEditingAge || isEditingName) ? Icons.check : Icons.delete),
-        onPressed: () async {
-          if (isEditingName) {
-            await _saveName();
-          } else if (isEditingAge) {
-            await _saveAge();
-          } else {
-            await CozyData.delete<Person>(person.id);
-          }
-        },
+        trailing: IconButton(
+          icon: Icon(
+              (isEditingAge || isEditingName) ? Icons.check : Icons.delete),
+          onPressed: () async {
+            if (isEditingName) {
+              await _saveName();
+            } else if (isEditingAge) {
+              await _saveAge();
+            } else {
+              await CozyData.delete<Person>(id: person.id);
+            }
+          },
+        ),
       ),
     );
   }

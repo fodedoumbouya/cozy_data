@@ -8,8 +8,7 @@ import 'simple_example/simple_example.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await CozyData.initialize(
-      schemas: [PersonSchema, ProgrammerSchema], inspector: true);
+  await CozyData.initialize(schemas: [PersonSchema, RecipeSchema]);
   runApp(const MyApp());
 }
 
@@ -22,6 +21,7 @@ class MyApp extends StatelessWidget {
       title: 'Cozy Data Example',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: const Color.fromRGBO(242, 242, 247, 1),
       ),
       home: const PersonListView(),
     );
@@ -53,12 +53,12 @@ class _PersonListViewState extends State<PersonListView> {
             },
             child: const Text("Simple Example"),
           ),
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const RecipeListScreen()),
+                MaterialPageRoute(builder: (context) => const FullExample()),
               );
             },
             child: const Text("Full Example"),

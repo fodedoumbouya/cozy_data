@@ -26,7 +26,7 @@ part of cozy_data;
 /// {@endtemplate}
 class CozyData {
   static Isar? _isar;
-  static final _queryCache = <String, DataQueryListener<dynamic>>{};
+  static final _queryCache = <String, CozyQueryListener<dynamic>>{};
   static bool _isInitialized = false;
   static Completer<void>? _initializer;
   static bool _idTypeInt = false;
@@ -104,7 +104,7 @@ class CozyData {
     }
   }
 
-  /// Retrieves a [DataQueryListener] for querying data.
+  /// Retrieves a [CozyQueryListener] for querying data.
   ///
   /// {@template query_listener}
   /// Use this method to obtain a listener for querying the database
@@ -143,10 +143,10 @@ class CozyData {
   /// }
   ///
   /// {@endtemplate}
-  static DataQueryListener<T> queryListener<T>({
+  static CozyQueryListener<T> queryListener<T>({
     int? limit,
     int? offset,
-    DataQueryController<T>? controller,
+    CozyQueryController<T>? controller,
   }) {
     if (T == dynamic) {
       throw Exception(
@@ -157,13 +157,13 @@ class CozyData {
     final queryKey = '${T.toString()}};${limit ?? 0};${offset ?? 0}';
     return _queryCache.putIfAbsent(
       queryKey,
-      () => DataQueryListener<T>(
+      () => CozyQueryListener<T>(
         isar: _isar!,
         controller: controller,
         limit: limit,
         offset: offset,
       ),
-    ) as DataQueryListener<T>;
+    ) as CozyQueryListener<T>;
   }
 
   /// Saves a model [T] to the database, either inserting or updating.
@@ -220,19 +220,18 @@ class CozyData {
   }
 
   /// Deletes a specific model [T] by its unique identifier.
-  static Future<void> delete<T>(dynamic id) async {
+  static Future<void> delete<T>({required dynamic id}) async {
     if (T == dynamic) {
       throw Exception(
-          'Cannot delete without model Data Type. Please provide a concrete model type.Example: CozyData.delete<ModelData>(id)');
+          'Cannot delete without model Data Type. Please provide a concrete model type.Example: [CozyData.delete<ModelData>(id: id)]');
     }
 
     await _ensureInitialized<T>();
 
-    if (_idTypeInt && id is! int) {
-      throw Exception(
-          'Id type of ${T.toString()} must be ${_idTypeInt ? 'int' : 'string'}');
+    /// Check if the id is of the correct type
+    if (_idTypeInt && id is! int || !_idTypeInt && id is! String) {
+      throw ('id type of ${T.toString()} must be ${_idTypeInt ? 'int' : 'string'} but was ${id.runtimeType} on [CozyData.delete<${T.toString()}>(id: $id)]');
     }
-
     await _isar!.write((isar) async {
       if (_idTypeInt) {
         isar.collection<int, T>().delete(id);
@@ -246,7 +245,7 @@ class CozyData {
   static Future<void> deleteAll<T>() async {
     if (T == dynamic) {
       throw Exception(
-          'Cannot delete without model Data Type. Please provide a concrete model type.Example: CozyData.deleteAll<ModelData>()');
+          'Cannot delete without model Data Type. Please provide a concrete model type.Example: [CozyData.deleteAll<ModelData>()]');
     }
     await _ensureInitialized<T>();
 

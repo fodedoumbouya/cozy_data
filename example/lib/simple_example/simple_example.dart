@@ -11,13 +11,14 @@ class SimpleExample extends StatelessWidget {
   const SimpleExample({super.key});
 
   /// Query  for the Person Data from CozyData
-  static final DataQueryListener<Person> _personQuery =
+  static final CozyQueryListener<Person> _personQuery =
       CozyData.queryListener<Person>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(242, 242, 247, 1),
         title: const Text("Simple Example"),
       ),
       body: ListenableBuilder(

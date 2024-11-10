@@ -2,26 +2,26 @@
 
 part of cozy_data;
 
-/// A controller to manage and modify data queries for a [DataQueryListener].
+/// A controller to manage and modify data queries for a [CozyQueryListener].
 ///
 /// {@template data_query_controller}
-/// The [DataQueryController] provides an interface to interact with
-/// a [DataQueryListener] instance, allowing control over the query builder
+/// The [CozyQueryController] provides an interface to interact with
+/// a [CozyQueryListener] instance, allowing control over the query builder
 /// and refreshing data based on modified query conditions.
 ///
 /// Use [queryPredicate] to dynamically adjust the query with additional filters,
 /// sort conditions, or distinct conditions. This class is generic and works with any data
 /// model type `T`.
 /// {@endtemplate}
-class DataQueryController<T> {
-  DataQueryListener<T>? _listener;
+class CozyQueryController<T> {
+  CozyQueryListener<T>? _listener;
 
-  /// Attaches a [DataQueryListener] to the controller.
+  /// Attaches a [CozyQueryListener] to the controller.
   ///
-  /// This private method is used internally by the [DataQueryListener]
+  /// This private method is used internally by the [CozyQueryListener]
   /// to associate itself with this controller, enabling control over
   /// its query and data refresh actions.
-  void _attach(DataQueryListener<T> listener) {
+  void _attach(CozyQueryListener<T> listener) {
     _listener = listener;
   }
 
