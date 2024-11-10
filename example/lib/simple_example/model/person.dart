@@ -11,22 +11,3 @@ class Person {
 
   Person({required this.id, this.name, this.age});
 }
-
-// @embedded
-// class Address {
-//   String? street;
-//   String? city;
-//   String? country;
-// }
-
-// @collection
-// class Person2 extends PersistentData {
-//   String? name;
-//   @Index()
-//   int? age;
-
-//   // @Index(type: IndexType.value)
-//   String? email;
-
-//   List<Address>? addresses;
-// }

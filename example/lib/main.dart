@@ -8,7 +8,8 @@ import 'simple_example/simple_example.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await CozyData.initialize(schemas: [PersonSchema, RecipeSchema]);
+  await CozyData.initialize(
+      schemas: [PersonSchema, RecipeSchema], engine: IsarEngine.sqlite);
   runApp(const MyApp());
 }
 
