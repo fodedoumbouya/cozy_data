@@ -1,6 +1,7 @@
 import 'package:cozy_data/cozy_data.dart';
 import 'package:cozy_data_example/full_example/full_example.dart';
 import 'package:cozy_data_example/full_example/model/recipe.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'simple_example/model/person.dart';
@@ -8,8 +9,7 @@ import 'simple_example/simple_example.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await CozyData.initialize(
-      schemas: [PersonSchema, RecipeSchema], engine: IsarEngine.sqlite);
+  await CozyData.initialize(schemas: [PersonSchema, RecipeSchema]);
   runApp(const MyApp());
 }
 
@@ -38,14 +38,6 @@ class Examples extends StatefulWidget {
 }
 
 class _ExamplesState extends State<Examples> {
-  CozyQueryListener<Person> personQuery = CozyData.queryListener<Person>();
-
-  @override
-  void dispose() {
-    super.dispose();
-    personQuery.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,7 +52,10 @@ class _ExamplesState extends State<Examples> {
                 MaterialPageRoute(builder: (context) => const SimpleExample()),
               );
             },
-            child: const Text("Simple Example"),
+            child: const Text(
+              "Simple Example",
+              style: TextStyle(color: CupertinoColors.activeBlue),
+            ),
           ),
           const SizedBox(height: 20),
           ElevatedButton(
@@ -72,7 +67,10 @@ class _ExamplesState extends State<Examples> {
                 ),
               );
             },
-            child: const Text("Full Example"),
+            child: const Text(
+              "Full Example",
+              style: TextStyle(color: CupertinoColors.activeBlue),
+            ),
           ),
         ],
       ),
