@@ -19,11 +19,10 @@
 </p>
 
 <p align="center">
-  <a href="https://isar.dev">Quickstart</a> •
-  <a href="https://isar.dev/schema">Documentation</a> •
-  <a href="https://github.com/isar/isar/tree/main/examples/">Sample Apps</a> •
-  <a href="https://github.com/isar/isar/discussions">Support & Ideas</a> •
-  <a href="https://pub.dev/packages/isar">Pub.dev</a>
+  <a href="https://github.com/fodedoumbouya/cozy_data">Quickstart</a> •
+  <a href="https://github.com/fodedoumbouya/cozy_data">Documentation</a> •
+  <a href="https://github.com/fodedoumbouya/cozy_data/tree/main/example">Sample Apps</a> •
+  <a href="https://pub.dev/packages/cozy_data">Pub.dev</a>
 </p>
 
 > #### CozyData:
@@ -43,6 +42,10 @@ A Swift-inspired persistent data management solution for Flutter. CozyData provi
 - 🎯 Type-safe data operations
 - 🧩 Easy-to-use annotations
 - 📦 Zero configuration needed
+
+## showcases
+https://github.com/user-attachments/assets/5295950d-3ed9-45d8-abb2-549aa30e9aad
+
 
 ## Quickstart
 
