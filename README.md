@@ -45,7 +45,10 @@ A Swift-inspired persistent data management solution for Flutter. CozyData provi
 
 ## showcases
 
-https://github.com/user-attachments/assets/5295950d-3ed9-45d8-abb2-549aa30e9aad
+
+![Cozy_data Demo](https://github.com/user-attachments/assets/5295950d-3ed9-45d8-abb2-549aa30e9aad)
+
+
 
 
 
