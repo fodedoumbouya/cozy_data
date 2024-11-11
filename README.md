@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://pub.dev/publishers/doumbouya.dev/packagesr">
+  <a href="https://pub.dev/packages/cozy_data">
     <img src="https://img.shields.io/pub/v/os_ui?label=pub.dev&labelColor=333940&logo=dart">
   </a>
   <a href="https://github.com/fodedoumbouya/cozy_data">
