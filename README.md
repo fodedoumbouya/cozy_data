@@ -32,6 +32,8 @@
 
 A Swift-inspired persistent data management solution for Flutter. CozyData provides a simple, powerful, and type-safe way to persist your app's models and automatically update your UI when data changes.
 
+⚠️ CozyData is not READY FOR PRODUCTION USE YET⚠️  
+
 ## Features
 
 - 🔄 Automatic UI updates when data changes
