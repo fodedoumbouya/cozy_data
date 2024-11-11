@@ -1,6 +1,6 @@
 import 'package:cozy_data/cozy_data.dart';
 import 'package:cozy_data_example/full_example/full_example.dart';
-import 'package:cozy_data_example/full_example/model/programmer.dart';
+import 'package:cozy_data_example/full_example/model/recipe.dart';
 import 'package:flutter/material.dart';
 
 import 'simple_example/model/person.dart';
@@ -24,20 +24,28 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: const Color.fromRGBO(242, 242, 247, 1),
       ),
-      home: const PersonListView(),
+      home: const Examples(),
     );
   }
 }
 
 // Example usage in a Flutter widget
-class PersonListView extends StatefulWidget {
-  const PersonListView({super.key});
+class Examples extends StatefulWidget {
+  const Examples({super.key});
 
   @override
-  _PersonListViewState createState() => _PersonListViewState();
+  _ExamplesState createState() => _ExamplesState();
 }
 
-class _PersonListViewState extends State<PersonListView> {
+class _ExamplesState extends State<Examples> {
+  CozyQueryListener<Person> personQuery = CozyData.queryListener<Person>();
+
+  @override
+  void dispose() {
+    super.dispose();
+    personQuery.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,7 +67,9 @@ class _PersonListViewState extends State<PersonListView> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FullExample()),
+                MaterialPageRoute(
+                  builder: (context) => const FullExample(),
+                ),
               );
             },
             child: const Text("Full Example"),

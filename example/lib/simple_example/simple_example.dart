@@ -7,12 +7,22 @@ import 'model/person.dart';
 import '../utils/utils.dart';
 import 'widgets/editableListTile.dart';
 
-class SimpleExample extends StatelessWidget {
+class SimpleExample extends StatefulWidget {
   const SimpleExample({super.key});
 
-  /// Query  for the Person Data from CozyData
-  static final CozyQueryListener<Person> _personQuery =
+  @override
+  State<SimpleExample> createState() => _SimpleExampleState();
+}
+
+class _SimpleExampleState extends State<SimpleExample> {
+  final CozyQueryListener<Person> personQuery =
       CozyData.queryListener<Person>();
+
+  @override
+  void dispose() {
+    personQuery.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +32,9 @@ class SimpleExample extends StatelessWidget {
         title: const Text("Simple Example"),
       ),
       body: ListenableBuilder(
-        listenable: _personQuery,
+        listenable: personQuery,
         builder: (context, _) {
-          final persons = _personQuery.items;
+          final persons = personQuery.items;
           if (persons.isEmpty) {
             return const Center(
               child: Text(
@@ -47,7 +57,7 @@ class SimpleExample extends StatelessWidget {
           /// just a simple autoincrementer to generate the id
           /// .init() is used to initialize the autoincrementer with the current count of the query
           AutoIncrementer autoIncrementer = AutoIncrementer()
-              .init(_personQuery.controller.queryBuilder.count());
+              .init(personQuery.controller.queryBuilder.count());
           final id = autoIncrementer.getNextId();
 
           /// Create a new person with the generated id

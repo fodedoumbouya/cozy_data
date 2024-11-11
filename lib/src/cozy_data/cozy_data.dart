@@ -155,6 +155,20 @@ class CozyData {
     _ensureInitialized<T>();
 
     final queryKey = '${T.toString()}};${limit ?? 0};${offset ?? 0}';
+
+    /// Check if the query listener is already cached
+    /// if it is, return it
+    /// if it is not, create a new one and cache it
+    /// if it is disposed, remove it from the cache
+    if (_queryCache.containsKey(queryKey)) {
+      final queryL = _queryCache[queryKey] as CozyQueryListener<T>;
+      if (queryL._isDisposed) {
+        _queryCache.remove(queryKey);
+      } else {
+        return queryL;
+      }
+    }
+
     return _queryCache.putIfAbsent(
       queryKey,
       () => CozyQueryListener<T>(
@@ -212,6 +226,24 @@ class CozyData {
       }
     });
     return q.findAll();
+  }
+
+  static Future<T?> findById<T>({required dynamic id}) async {
+    await _ensureInitialized<T>();
+
+    /// Check if the id is of the correct type
+    if (_idTypeInt && id is! int || !_idTypeInt && id is! String) {
+      throw ('id type of ${T.toString()} must be ${_idTypeInt ? 'int' : 'string'} but was ${id.runtimeType} on [CozyData.findById<${T.toString()}>(id: $id)]');
+    }
+
+    IsarCollection<dynamic, T> collection;
+    if (_idTypeInt) {
+      collection = _isar!.collection<int, T>();
+    } else {
+      collection = _isar!.collection<String, T>();
+    }
+
+    return collection.get(id);
   }
 
   /// Updates a model [T] in the database, re-saving it.

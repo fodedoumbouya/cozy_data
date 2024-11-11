@@ -1,6 +1,6 @@
 import 'package:cozy_data/cozy_data.dart';
 
-part 'programmer.g.dart';
+part 'recipe.g.dart';
 
 @collection
 class Recipe {

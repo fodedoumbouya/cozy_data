@@ -2,7 +2,7 @@ import 'package:cozy_data/cozy_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'model/programmer.dart';
+import 'model/recipe.dart';
 import 'widgets/recipeViewDetails.dart';
 import 'widgets/sortPicker.dart';
 
@@ -24,7 +24,7 @@ class _FullExampleState extends State<FullExample> {
       ValueNotifier<SortOrder>(SortOrder.itemAsc);
 
   /// Query listener for Recipe data from CozyData
-  static final CozyQueryListener<Recipe> _recipeQuery =
+  final CozyQueryListener<Recipe> _recipeQuery =
       CozyData.queryListener<Recipe>(controller: _queryController);
 
   /// Returns the appropriate sort function based on the selected order
@@ -84,6 +84,7 @@ class _FullExampleState extends State<FullExample> {
   void dispose() {
     _searchController.dispose();
     _currentSortOrder.dispose();
+    _recipeQuery.dispose();
     super.dispose();
   }
 

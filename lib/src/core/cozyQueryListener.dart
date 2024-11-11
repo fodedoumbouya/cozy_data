@@ -28,6 +28,8 @@ class CozyQueryListener<T> with ChangeNotifier {
   late IsarQuery<T> _queryBuilder;
   late final CozyQueryController<T> controller;
 
+  bool _isDisposed = false;
+
   /// Provides a read-only list of the queried items.
   List<T> get items => _items;
 
@@ -123,9 +125,12 @@ class CozyQueryListener<T> with ChangeNotifier {
   ///
   /// This method should be called when the listener is no longer needed
   /// to prevent memory leaks from the active stream subscription.
+
   @override
   void dispose() {
     _subscription?.cancel();
+    _subscription = null;
+    _isDisposed = true;
     super.dispose();
   }
 }

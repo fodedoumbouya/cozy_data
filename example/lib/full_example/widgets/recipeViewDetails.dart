@@ -1,5 +1,5 @@
 import 'package:cozy_data/cozy_data.dart';
-import 'package:cozy_data_example/full_example/model/programmer.dart';
+import 'package:cozy_data_example/full_example/model/recipe.dart';
 import 'package:cozy_data_example/full_example/widgets/addIngredient.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

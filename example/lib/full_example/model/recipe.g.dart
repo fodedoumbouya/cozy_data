@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'programmer.dart';
+part of 'recipe.dart';
 
 // **************************************************************************
 // _IsarCollectionGenerator

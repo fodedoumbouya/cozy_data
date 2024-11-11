@@ -1,4 +1,4 @@
-import 'package:cozy_data_example/full_example/model/programmer.dart';
+import 'package:cozy_data_example/full_example/model/recipe.dart';
 import 'package:flutter/material.dart';
 
 class AddIngredient extends StatelessWidget {
