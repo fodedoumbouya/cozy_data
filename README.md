@@ -44,6 +44,12 @@ A Swift-inspired persistent data management solution for Flutter. CozyData provi
 - 🧩 Easy-to-use annotations
 - 📦 Zero configuration needed
 
+## showcases
+
+https://github.com/user-attachments/assets/5295950d-3ed9-45d8-abb2-549aa30e9aad
+
+
+
 ## Quickstart
 
 Add `cozy_data` to your `pubspec.yaml`:
