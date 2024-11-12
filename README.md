@@ -1,7 +1,5 @@
 <p align="center">
-  <a href="https://doumbouya.dev">
     <img src="https://github.com/user-attachments/assets/cec31d91-4991-40bd-aeb4-9ecbdeee1ba1?sanitize=true" height="428">
-  </a>
   <h1 align="center">Cozy Data</h1>
 </p>
 
@@ -32,7 +30,6 @@
 
 A Swift-inspired persistent data management solution for Flutter. CozyData provides a simple, powerful, and type-safe way to persist your app's models and automatically update your UI when data changes.
 
-⚠️ CozyData is not READY FOR PRODUCTION USE YET⚠️  
 
 ## Features
 
@@ -44,9 +41,6 @@ A Swift-inspired persistent data management solution for Flutter. CozyData provi
 - 🎯 Type-safe data operations
 - 🧩 Easy-to-use annotations
 - 📦 Zero configuration needed
-
-## showcases
-https://github.com/user-attachments/assets/5295950d-3ed9-45d8-abb2-549aa30e9aad
 
 
 ## Quickstart
