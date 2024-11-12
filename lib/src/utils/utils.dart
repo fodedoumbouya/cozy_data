@@ -7,7 +7,6 @@ class Utils {
   static final Utils instance = Utils._();
 
   factory Utils() => instance;
-  static final queryCache = <String, CozyQueryListener<dynamic>>{};
 
   static Future<void> idsTypeIsInt({required Isar isar}) async {
     for (var i = 0; i < isar.schemas.length; i++) {}
