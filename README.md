@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/cec31d91-4991-40bd-aeb4-9ecbdeee1ba1?sanitize=true" height="428">
+    <img src="https://raw.githubusercontent.com/fodedoumbouya/cozy_data/main/logo/cozyData.png" height="428">
   <h1 align="center">Cozy Data</h1>
 </p>
 
