@@ -26,7 +26,7 @@
 > #### CozyData:
 
 > 1. SwiftData for flutter.
-> 2. Based on [isar](https://pub.dev/packages/isar).
+> 2. Support sqlite, sqlite3, inMemory data Storage
 
 A Swift-inspired persistent data management solution for Flutter. CozyData provides a simple, powerful, and type-safe way to persist your app's models and automatically update your UI when data changes.
 
@@ -52,6 +52,7 @@ Add `cozy_data` to your `pubspec.yaml`:
 ```yaml
 dependencies:
   cozy_data: latest
+  dart_mappable: latest
 
 dev_dependencies:
   build_runner: any
@@ -62,40 +63,49 @@ dev_dependencies:
 ### 1. Define Your Models
 
 ```dart
-import 'package:cozy_data/cozy_data.dart';
-part 'recipe.g.dart';
+import 'package:dart_mappable/dart_mappable.dart';
+part 'recipe.mapper.dart';
 
-@collection
-class Recipe {
-  final int id;
+@MappableClass()
+class Recipe with RecipeMappable {
+  final String id;
   String name;
   List<Ingredients>? ingredients;
 
   Recipe({required this.id, required this.name, this.ingredients});
 }
 
-@embedded
-class Ingredients {
+@MappableClass()
+class Ingredients with IngredientsMappable {
   String name;
-  int quantity;
-  Ingredients({required this.name, required this.quantity});
+  int? quantity;
+  CookStyle cookStyle;
+  Ingredients({required this.name, this.quantity, required this.cookStyle});
 }
 
+@MappableEnum()
+enum CookStyle { bake, fry, boil }
+
 ```
-and make sure to run `dart run build_runner build` after creating your model
+and make sure to run `dart run build_runner build` after creating your model.
+
+For more about the annotation please check [dart_mappable](https://pub.dev/packages/dart_mappable).
+
 
 ## 2. Initialize CozyData
 Initialize CozyData in your `main.dart`:
 ```dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
- await CozyData.initialize(
-      schemas: [RecipeSchema]);
+  await CozyData.initialize(
+      engine: CozyEngine.sqlite3,
+      mappers: [RecipeMapper.ensureInitialized()]);
+
   runApp(MyApp());
 }
  
 ```
-the `RecipeSchema` will be generate in `.g.dart` file
+the `RecipeMapper` will be generate in `.mapper.dart` file
 
 ## Basic Operations
 
@@ -103,23 +113,25 @@ the `RecipeSchema` will be generate in `.g.dart` file
 
 ```dart
 final newRecipe = Recipe(
-  id: 1,
+  id: CozyId.cozyPersistentModelIDString(),
   name: 'salad',
   ingredients: [
-  Ingredients(name: 'lettuce', quantity: 1),
-  Ingredients(name: 'tomato', quantity: 2),
-  Ingredients(name: 'cucumber', quantity: 1),
+    Ingredients(name: 'Tomato',quantity: 2,cookStyle: CookStyle.fry),
+    Ingredients(name: 'Onion',quantity: 1,cookStyle: CookStyle.fry),
+    Ingredients(name: 'Salt',quantity: 1,cookStyle: CookStyle.boil),
   ]
 );
 
 await CozyData.save<Recipe>(newRecipe);
 
 ```
+Note: DataModel must be Specify `<Recipe>`
+
 ### Delete Data
 
 ```dart
 
-await CozyData.delete<Recipe>(id: 1);
+await CozyData.delete<Recipe>(model);
 
 ```
 
@@ -171,68 +183,102 @@ final CozyQueryListener<Recipe> _recipeQuery = CozyData.queryListener<Recipe>();
 ### Fetch Data Once
 ```dart
 
-final recipes = await CozyData.fetch<Recipe>(
-  sortByProperties: [
-    SortProperty(property: 1, sort: Sort.desc),
-  ]
-);
+final recipes = await CozyData.fetch<Recipe>();
 
 ```
-
-Note: `property` is the index of the `name` in our class model
 
 ### Find by ID
 
 ```dart
-final recipe = await CozyData.findById<Recipe>(id: id);
+final recipe = await CozyData.fetcById<Recipe>(id: id);
 
 ```
 
 ## Advanced Usage 
 
-### Sorting and Filtering once
+The `CozyQueryBuilder` is a class used to construct complex SQL-like queries in a structured and programmatic way. It allows you to specify various components of a query, such as fields to group by, order by, having clauses, joins, limits, offsets, selected fields, subqueries, table aliases, and where conditions.
 
 ```dart
 
-final recipes = CozyData.fetch<Person>(
-  filterCondition: EqualCondition(property: 1, value: "salad"),
-    sortByProperties: [
-      SortProperty(property: 1, sort: Sort.desc),
-  ]
+final customBuilder = CozyQueryBuilder(
+// groupByFields: A list of fields by which the results should be grouped. In this case, it's an empty list, meaning no grouping is applied.
+groupByFields: [],
+// orderByFields: A list of fields by which the results should be ordered. It's also an empty list here, so no specific ordering is applied.
+orderByFields: [],
+// Conditions that filter the groups created by the groupBy clause. It's empty, indicating no such conditions.
+havingClauses: [],
+// joins: A list of join operations to combine rows from two or more tables based on a related column. No joins are specified here
+joins: [],
+// limit: The maximum number of records to return. Here, it's set to 10.
+limit: 10,
+// offset: The number of records to skip before starting to return records. It's set to 0, meaning no records are skipped.
+offset: 0,
+// selectFields: A list of fields to be selected in the query. It's empty, meaning all fields are selected
+selectFields: [],
+// subqueries: A list of subqueries to be included in the main query. It's empty, indicating no subqueries.
+subqueries: [],
+// tableAliases: A map of table aliases to be used in the query. It's an empty map here.
+tableAliases: {},
+// whereGroups: A list of conditions to filter the results. It's empty, meaning no filtering conditions are applied.
+whereGroups: [],
 );
 
 ```
 
+### Sorting and Filtering once
+
+
+```dart
+
+final recipes = await CozyData.fetch<Recipe>(customBuilder: customBuilder);
+
+```
+
+The `CozyQueryController` manages query operations for a `CozyQueryListener`. It allows adding where conditions, joins, order by fields, and custom queries to the listener.
+
+Example usage:
+
+```dart
+  final controller = CozyQueryController<MyModel>();
+  await controller.addWhere([PredicateGroup(predicates: [Predicate.equals('field', 'value')])]);
+  await controller.addJoin([Join(table: 'other_table', condition: 'other_table.id = my_table.other_id')]);
+  await controller.orderBy([OrderBy(field: 'created_at', direction: OrderDirection.desc)]);
+  await controller.addCustomQuery(CozyQueryBuilder<MyModel>());
+  await controller.reset();
+```
+
+
 ### Sorting and Filtering 
 ```dart
-// Controllers
+// Controller
 final CozyQueryController<Recipe> _queryController = CozyQueryController<Recipe>();
 
 final CozyQueryListener<Recipe> _recipeQuery =
       CozyData.queryListener<Recipe>(controller: _queryController);
 
-await controller.queryPredicate(
-    filterModifier: (filterQuery) => filterQuery.nameContains(value),
-    istinctModifier: (distinctQuery) =>distinctQuery.distinctByName(),
-    sortModifier: (sortByQuery) => sortByQuery.sortByName(),
-    limit: 2,
-    offset: 0
-);
+  await controller.addWhere([PredicateGroup(predicates: [Predicate.contains('field', 'value')])]);
+
 
 ```
 
-## Model Attributes
-
-### @collection
-Marks a class as a persistent model that can be stored in the database.
-
-### @embedded
-Marks a class as an embedded object that can be included in other models.
 
 ## Best Practices
 - **Initialize Early:** Call CozyData.initialize() as early as possible in your app lifecycle.
 
 - **Dispose Queries:** Always dispose of queries when they're no longer needed to prevent memory leaks.
+
+## Full Documentation
+See the full documentation [here](https://cozydata.web.app/)
+or jump directly to the topic you are looking for:
+- [**CozyQueryController**](https://cozydata.web.app/docs/getting-started/api-reference/cozyQueryController/) 
+  show you how to manages your query operations.
+- [**Predicate**](https://cozydata.web.app/docs/getting-started/api-reference/predicate/) 
+  show you the available prediacte query conditions for filtering data.
+- [**CozyEngine Enum**](https://cozydata.web.app/docs/getting-started/api-reference/cozyEngine/)
+  represents the types of storage engines supported by the Cozy
+- [**Best Practices for CozyData**](https://cozydata.web.app/docs/getting-started/bestPracticesCozyData/)
+  comprehensive guide to best practices for using CozyData in your Flutter applications.
+
 
 
 ### License
@@ -252,4 +298,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-

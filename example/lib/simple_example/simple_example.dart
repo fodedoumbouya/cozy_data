@@ -28,8 +28,6 @@ final _personNames = [
   "Zoe",
 ];
 
-class ClassName {}
-
 class SimpleExample extends StatefulWidget {
   const SimpleExample({super.key});
 
