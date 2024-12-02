@@ -28,45 +28,48 @@ class _FullExampleState extends State<FullExample> {
       CozyData.queryListener<Recipe>(controller: _queryController);
 
   /// Returns the appropriate sort function based on the selected order
-  QueryBuilder<Recipe, Recipe, QAfterSortBy> _getSortFunction(
-    SortOrder order,
-    QueryBuilder<Recipe, Recipe, QAfterFilterCondition> sortByQuery,
-  ) {
+  OrderBy _getSortFunction(SortOrder order) {
     switch (order) {
       case SortOrder.itemAsc:
-        return sortByQuery.sortById();
+        return OrderBy("id", OrderDirection.asc);
       case SortOrder.itemDesc:
-        return sortByQuery.sortByIdDesc();
+        return OrderBy("id", OrderDirection.desc);
       case SortOrder.nameAsc:
-        return sortByQuery.sortByName();
+        return OrderBy("name", OrderDirection.asc);
       case SortOrder.nameDesc:
-        return sortByQuery.sortByNameDesc();
+        return OrderBy("name", OrderDirection.desc);
       default:
-        return sortByQuery.sortById();
+        return OrderBy("id", OrderDirection.asc);
     }
   }
 
   /// Updates the query based on search text and sort order
   void _updateQuery() async {
-    await _queryController.queryPredicate(
-      filterModifier: (filterQuery) =>
-          filterQuery.nameContains(_searchController.text),
-      sortModifier: (sortByQuery) =>
-          _getSortFunction(_currentSortOrder.value, sortByQuery),
-    );
+    _queryController.addWhere([
+      PredicateGroup(
+          predicates: [
+            Predicate.contains("name", _searchController.text),
+          ],
+          type: PredicateGroupType.or,
+          subgroups: [
+            PredicateGroup(
+              predicates: [
+                Predicate.contains("ingredients", _searchController.text),
+              ],
+            ),
+          ])
+    ]);
+
+    _queryController.orderBy([_getSortFunction(_currentSortOrder.value)]);
   }
 
   /// Creates and navigates to a new recipe
   void _createNewRecipe() {
-    final newRecipe = Recipe(
-      id: DateTime.now().millisecondsSinceEpoch,
-      name: '',
-    );
-    _navigateToRecipeDetails(newRecipe);
+    _navigateToRecipeDetails(null);
   }
 
   /// Navigates to recipe details screen
-  void _navigateToRecipeDetails(Recipe recipe) {
+  void _navigateToRecipeDetails(Recipe? recipe) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => RecipeViewDetails(recipe: recipe),
@@ -77,6 +80,8 @@ class _FullExampleState extends State<FullExample> {
   @override
   void initState() {
     super.initState();
+
+    /// Initialize the query controller with the default sort order
     _searchController.addListener(_updateQuery);
   }
 
@@ -138,7 +143,7 @@ class _FullExampleState extends State<FullExample> {
       child: Padding(
         padding: const EdgeInsets.all(13),
         child: CupertinoSearchTextField(
-          placeholder: 'Search',
+          placeholder: 'Search for recipes or ingredients',
           backgroundColor: const Color.fromRGBO(227, 227, 233, 1),
           controller: _searchController,
         ),
@@ -193,9 +198,10 @@ class _FullExampleState extends State<FullExample> {
                               },
                             ),
                             if (!isLastitem)
-                              const Divider(
+                              Divider(
                                 height: 1,
-                                indent: 16,
+                                indent: 15,
+                                color: Colors.grey.shade200,
                               ),
                           ],
                         );
@@ -213,8 +219,6 @@ class _FullExampleState extends State<FullExample> {
     _currentSortOrder.value = newOrder;
     _searchController.clear();
 
-    await _queryController.queryPredicate(
-      sortModifier: (sortByQuery) => _getSortFunction(newOrder, sortByQuery),
-    );
+    await _queryController.orderBy([_getSortFunction(newOrder)]);
   }
 }

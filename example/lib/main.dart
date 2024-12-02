@@ -1,15 +1,18 @@
 import 'package:cozy_data/cozy_data.dart';
-import 'package:cozy_data_example/full_example/full_example.dart';
-import 'package:cozy_data_example/full_example/model/recipe.dart';
+import 'package:cozy_data_example/simple_example/simple_example.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'full_example/full_example.dart';
+import 'full_example/model/recipe.dart';
 import 'simple_example/model/person.dart';
-import 'simple_example/simple_example.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await CozyData.initialize(schemas: [PersonSchema, RecipeSchema]);
+  await CozyData.initialize(showLogs: true, mappers: [
+    PersonMapper.ensureInitialized(),
+    RecipeMapper.ensureInitialized()
+  ]);
   runApp(const MyApp());
 }
 

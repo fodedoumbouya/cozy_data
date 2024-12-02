@@ -45,17 +45,19 @@ class _EditableListTileState extends State<EditableListTile> {
     super.dispose();
   }
 
-  Future<void> _saveName() async {
+  /// Updates the name of the person
+  Future<void> _updateName() async {
     setState(() => isEditingName = false);
     person.name = _nameController.text;
     await CozyData.update<Person>(person);
   }
 
-  Future<void> _saveAge() async {
+  /// Updates the age of the person
+  Future<void> _updateAge() async {
     setState(() => isEditingAge = false);
     final age = int.tryParse(_ageController.text);
     person.age = age ?? person.age;
-    await CozyData.save<Person>(person);
+    await CozyData.update<Person>(person);
   }
 
   @override
@@ -77,8 +79,8 @@ class _EditableListTileState extends State<EditableListTile> {
             ? TextField(
                 controller: _nameController,
                 autofocus: true,
-                onSubmitted: (_) => _saveName(),
-                onEditingComplete: _saveName,
+                onSubmitted: (_) => _updateName(),
+                onEditingComplete: _updateName,
                 decoration: const InputDecoration(
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -98,8 +100,8 @@ class _EditableListTileState extends State<EditableListTile> {
                 controller: _ageController,
                 autofocus: true,
                 keyboardType: TextInputType.number,
-                onSubmitted: (_) => _saveAge(),
-                onEditingComplete: () => _saveAge(),
+                onSubmitted: (_) => _updateAge(),
+                onEditingComplete: () => _updateAge(),
                 decoration: const InputDecoration(
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -112,18 +114,18 @@ class _EditableListTileState extends State<EditableListTile> {
                     setState(() => isEditingAge = true);
                   }
                 },
-                child: Text(_ageController.text),
+                child: Text("age: ${_ageController.text}"),
               ),
         trailing: IconButton(
           icon: Icon(
               (isEditingAge || isEditingName) ? Icons.check : Icons.delete),
           onPressed: () async {
             if (isEditingName) {
-              await _saveName();
+              await _updateName();
             } else if (isEditingAge) {
-              await _saveAge();
+              await _updateAge();
             } else {
-              await CozyData.delete<Person>(id: person.id);
+              await CozyData.delete<Person>(person);
             }
           },
         ),

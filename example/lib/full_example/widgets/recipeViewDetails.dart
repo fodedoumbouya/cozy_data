@@ -1,18 +1,19 @@
-import 'package:cozy_data/cozy_data.dart';
 import 'package:cozy_data_example/full_example/model/recipe.dart';
+import 'package:cozy_data/cozy_data.dart';
 import 'package:cozy_data_example/full_example/widgets/addIngredient.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class RecipeViewDetails extends StatefulWidget {
-  final Recipe recipe;
-  const RecipeViewDetails({super.key, required this.recipe});
+  final Recipe? recipe;
+  const RecipeViewDetails({super.key, this.recipe});
 
   @override
   State<RecipeViewDetails> createState() => _RecipeViewDetailsState();
 }
 
 class _RecipeViewDetailsState extends State<RecipeViewDetails> {
+  late Recipe recipe;
   Widget field({required String hintText}) {
     return Container(
       decoration: BoxDecoration(
@@ -20,7 +21,7 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(
-        controller: TextEditingController(text: widget.recipe.name),
+        controller: TextEditingController(text: recipe.name),
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(color: Colors.grey),
@@ -30,10 +31,21 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
           contentPadding: const EdgeInsets.all(16),
         ),
         onChanged: (value) {
-          widget.recipe.name = value;
+          recipe.name = value;
         },
       ),
     );
+  }
+
+  @override
+  void initState() {
+    // Initialize the recipe object with the provided recipe or a new one
+    recipe = widget.recipe ??
+        Recipe(
+          id: CozyId.cozyPersistentModelIDString(),
+          name: '',
+        );
+    super.initState();
   }
 
   @override
@@ -42,8 +54,11 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
       canPop: false,
       onPopInvoked: (didPop) {
         if (didPop) return;
-        if (widget.recipe.name.isNotEmpty) {
-          CozyData.save<Recipe>(widget.recipe);
+
+        if (widget.recipe != null) {
+          CozyData.update<Recipe>(recipe);
+        } else if (recipe.name.isNotEmpty) {
+          CozyData.save<Recipe>(recipe);
         }
         Navigator.of(context).pop();
       },
@@ -56,12 +71,12 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
             style: TextStyle(fontSize: 17),
           ),
           actions: [
-            if (widget.recipe.name.isNotEmpty)
+            if (recipe.name.isNotEmpty)
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () {
-                  if (widget.recipe.name.isNotEmpty) {
-                    CozyData.delete<Recipe>(id: widget.recipe.id);
+                  if (recipe.name.isNotEmpty) {
+                    CozyData.delete<Recipe>(recipe);
                     Navigator.of(context).pop();
                   }
                 },
@@ -92,10 +107,9 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
                   ),
                   child: Column(
                     children: [
-                      // Source Dropdown
-                      ...List.generate((widget.recipe.ingredients ?? []).length,
+                      ...List.generate((recipe.ingredients ?? []).length,
                           (index) {
-                        final ingredient = widget.recipe.ingredients![index];
+                        final ingredient = recipe.ingredients![index];
                         return ListTile(
                           title: Text(
                             ingredient.name,
@@ -106,21 +120,19 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
                             style: const TextStyle(),
                           ),
                           trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            ingredient.quantity.toString();
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => AddIngredient(
                                   ingredient: ingredient,
                                   onDeleted: (p0) {
-                                    widget.recipe.ingredients!
-                                        .remove(ingredient);
-                                    setState(() {});
+                                    recipe.ingredients!.remove(ingredient);
                                   },
                                 ),
                               ),
                             );
+                            setState(() {});
                           },
                         );
                       }),
@@ -131,7 +143,7 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
                 TextButton(
                   onPressed: () async {
                     Ingredients newIngredient =
-                        Ingredients(name: "", quantity: 0);
+                        Ingredients(name: "", cookStyle: CookStyle.fry);
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -141,8 +153,9 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
                       ),
                     );
                     if (newIngredient.name.isNotEmpty) {
-                      widget.recipe.ingredients ??= [];
-                      widget.recipe.ingredients!.add(newIngredient);
+                      recipe.ingredients ??= [];
+                      newIngredient.quantity ??= 0;
+                      recipe.ingredients!.add(newIngredient);
                       setState(() {});
                     }
                   },

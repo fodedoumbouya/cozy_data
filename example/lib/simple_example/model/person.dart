@@ -1,13 +1,25 @@
-import 'package:cozy_data/cozy_data.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 
-part 'person.g.dart';
+part 'person.mapper.dart';
 
-@collection
-class Person {
+@MappableClass()
+class Person with PersonMappable {
   final int id;
 
   String? name;
   int? age;
+  Car? car;
 
-  Person({required this.id, this.name, this.age});
+  Person({required this.id, this.name, this.age, this.car});
+}
+
+@MappableEnum()
+enum Brand { Toyota, Audi, BMW }
+
+@MappableClass()
+class Car with CarMappable {
+  final double miles;
+  final Brand brand;
+
+  const Car(this.miles, this.brand);
 }
