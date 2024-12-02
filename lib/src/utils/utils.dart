@@ -1,39 +1,38 @@
-import 'package:cozy_data/cozy_data.dart';
+part of cozy_data;
 
+/// Utility class providing common functionality for persistent data operations
+///
+/// This class contains static utilities and constants used across the persistent
+/// data framework. It provides:
+/// * Standard identifier field name for persistent models
+/// * Configurable logging functionality with error handling
 class Utils {
-  static final Map<String, bool> _idsTypeInt = {};
-  //make it singleton
-  Utils._();
-  static final Utils instance = Utils._();
+  /// Default identifier field used for persistent model entities
+  ///
+  /// This constant defines the standard field name 'id' that should be used
+  /// as the primary identifier in persistent data models
+  static String persistentModelID = 'id';
 
-  factory Utils() => instance;
-
-  static Future<void> idsTypeIsInt({required Isar isar}) async {
-    for (var i = 0; i < isar.schemas.length; i++) {}
-    for (var schema in isar.schemas) {
-      if (schema.embedded) {
-        continue;
-      }
-      final idType = schema.properties
-          .firstWhere((element) => element.name == 'id',
-              orElse: () => schema.getPropertyByIndex(0))
-          .type;
-      if (idType.isInt) {
-        _idsTypeInt[schema.name] = true;
-      } else if (idType.isString) {
-        _idsTypeInt[schema.name] = false;
-      }
+  /// Logs messages with configurable visibility and error status
+  ///
+  /// Parameters:
+  /// * [showLogs] - Boolean flag to control if logging is enabled
+  /// * [msg] - The message content to be logged
+  /// * [isError] - Optional flag to indicate if this is an error message
+  ///   (defaults to false)
+  ///
+  /// Uses [AppLog] internally to handle the actual logging:
+  /// * Error messages use AppLog.e()
+  /// * Regular messages use AppLog.t()
+  static void log(
+      {required bool showLogs, required String msg, bool isError = false}) {
+    if (!showLogs) {
+      return;
     }
-    return;
-  }
-
-  static Future<bool> getIdIsInit<T>() async {
-    final resp = _idsTypeInt[T.toString()];
-    if (resp == null) {
-      throw Exception(
-          "Id type of ${T.toString()} not found. Please make sure the schema is registered in the Isar instance. And the id property is int or string");
+    if (isError) {
+      AppLog.e(msg);
     } else {
-      return resp;
+      AppLog.t(msg);
     }
   }
 }

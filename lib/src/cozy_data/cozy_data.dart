@@ -1,148 +1,132 @@
-// ignore_for_file: invalid_use_of_protected_member, use_string_in_part_of_directives
-
 part of cozy_data;
 
-/// Manages and provides access to a shared Isar database instance.
+/// The `CozyReference` class holds a reference to a `ClassMapperBase` and a `CozyQueryListener`.
+/// It is used to cache query listeners for efficient reuse.
+
+/// {@category Models}
+class _CozyReference {
+  final ClassMapperBase mapper;
+  final CozyQueryListener<dynamic> listner;
+
+  _CozyReference({required this.mapper, required this.listner});
+}
+
+/// The `CozyData` class is a singleton that manages database operations and caching.
+/// It provides methods to initialize the database, query data, save data, delete data,
+/// update data, and fetch data by ID.
 ///
-/// {@template flutter_data_container}
-/// This singleton class handles initializing an Isar database instance,
-/// managing query listeners, and performing CRUD operations.
-/// You must initialize the container with a list of [schemas] before
-/// using any other methods. To initialize, call [initialize] once in
-/// your application startup code.
-///
-/// The [directory] parameter is optional and specifies the path where
-/// the database file will be stored. If not specified, the default
-/// application documents directory will be used.
-///
-/// Use the [inspector] option to enable the Isar Inspector in debug mode
-/// for live database inspection.
-///
-/// Use the static methods to interact with the database, such as:
-/// - [save] to insert or update data.
-/// - [fetch] to retrieve data with optional filtering and sorting.
-/// - [update] to modify existing records.
-/// - [delete] and [deleteAll] to remove records.
-/// {@endtemplate}
+/// Example usage:
+/// ```dart
+/// await CozyData.initialize(mappers: [MyModelMapper()]);
+/// final queryListener = CozyData.queryListener<MyModel>();
+/// final data = await CozyData.save(myModelInstance);
+/// await CozyData.delete(myModelInstance);
+/// await CozyData.update(myModelInstance);
+/// final fetchedData = await CozyData.fetch<MyModel>();
+/// final dataById = await CozyData.fetcById<MyModel>(1);
+/// await CozyData.dropTable<MyModel>();
+/// await CozyData.dropAllTables();
+/// CozyData.cleanAndCloseDb();
+/// ```
 class CozyData {
-  static Isar? _isar;
-  static final _queryCache = <String, CozyQueryListener<dynamic>>{};
-  static bool _isInitialized = false;
-  static Completer<void>? _initializer;
-  static bool _idTypeInt = false;
-  static const bool _isIdInitialized = false;
-
-  static List<IsarGeneratedSchema> schema = [];
-
-  // Private constructor to prevent instantiation
+  static final CozyData _instance = CozyData._();
+  factory CozyData() => _instance;
   CozyData._();
 
-  /// Initializes the Isar instance with the specified configurations.
+  static final _queryCache = <String, _CozyReference>{};
+  static final _mapperCache = <String, ClassMapperBase>{};
+  static bool _isInitialized = false;
+  static Completer<void>? _initializer;
+  static Db? _db;
+  static CozyEngine _engine = CozyEngine.sqlite;
+  static bool _shouldDropTableIfExistsButNoInit = false;
+  static bool _showLogs = false;
+  static String? _path;
+
+  static List<ClassMapperBase> _mappers = [];
+
+  /// Initializes the CozyData instance with the provided mappers and settings.
+  /// This method must be called before performing any database operations.
   ///
-  /// {@template initialize}
-  /// Call this method only once to set up the Isar instance with the
-  /// required [schemas]. Optionally, you may configure a [directory]
-  /// path, [engine] type, database [maxSizeMiB], and an [encryptionKey].
-  ///
-  /// The [compactOnLaunch] option allows for database compaction if the
-  /// conditions specified are met upon launch. This is recommended for
-  /// optimized performance.
-  ///
-  /// Enabling [inspector] allows live debugging in development mode using
-  /// the Isar Inspector. Use the [name] parameter to name the database
-  /// instance if opening multiple instances.
-  /// {@endtemplate}
-  static Future<void> initialize({
-    required List<IsarGeneratedSchema> schemas,
-    String? directory,
-    IsarEngine engine = IsarEngine.isar,
-    int? maxSizeMiB,
-    String? encryptionKey,
-    CompactCondition? compactOnLaunch,
-    bool inspector = false,
-    String name = Isar.defaultName,
-  }) async {
+  /// Example usage:
+  /// ```dart
+  /// await CozyData.initialize(mappers: [MyModelMapper()]);
+  /// ```
+  /// Parameters:
+  /// * [mappers] - A list of `ClassMapperBase` instances for the models to be used
+  /// * [engine] - The database engine to use (defaults to `CozyEngine.sqlite3`)
+  /// * [shouldDropTableIfExistsButNoInit] - A flag to drop tables if they exist but are not initialized (defaults to `false`)
+  /// * [showLogs] - A flag to enable logging (defaults to `false`)
+  /// * [persistentModelID] - The field name to use as the primary key (defaults to 'id')
+  /// * [path] - The path to the database file (defaults to the application documents directory)
+  static Future<void> initialize(
+      {required List<ClassMapperBase> mappers,
+      CozyEngine engine = CozyEngine.sqlite3,
+      bool shouldDropTableIfExistsButNoInit = false,
+      bool showLogs = false,
+      String? persistentModelID = 'id',
+      String? path}) async {
     if (_isInitialized) return;
-    schema = schemas;
+    _mappers = mappers;
 
     if (_initializer != null) {
       await _initializer!.future;
       return;
     }
-
     _initializer = Completer<void>();
-
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      _isar = Isar.open(
-        schemas: schemas,
-        directory: dir.path,
-        engine: IsarEngine.sqlite,
-        compactOnLaunch: compactOnLaunch,
-        encryptionKey: encryptionKey,
-        maxSizeMiB: maxSizeMiB,
-        inspector: inspector,
-        name: name,
+      _showLogs = showLogs;
+      _engine = engine;
+      _shouldDropTableIfExistsButNoInit = shouldDropTableIfExistsButNoInit;
+      final p = path ?? (await getApplicationDocumentsDirectory()).path;
+      _path = p;
+      Utils.persistentModelID = persistentModelID ?? 'id';
+
+      _db = await InitDatabase.getDb(
+        mappers: mappers,
+        engine: engine,
+        path: p,
+        showLogs: showLogs,
+        shouldDropTableIfExistsButNoInit: shouldDropTableIfExistsButNoInit,
       );
+      for (var mapper in mappers) {
+        _mapperCache[mapper.id] = mapper;
+      }
+      Utils.log(
+        msg: 'cozy_data initialized with tables: ${_mapperCache.keys}',
+        showLogs: showLogs,
+      );
+
       _isInitialized = true;
-      await Utils.idsTypeIsInt(isar: _isar!);
       _initializer!.complete();
     } catch (e) {
       _initializer!.completeError(e);
       _initializer = null;
-      throw Exception('Failed to initialize CozyData: $e');
+      throw Exception('Failed to initialize cozy_data: $e');
     }
   }
 
-  /// Ensures the Isar instance is initialized before performing any operations.
-  static Future<void> _ensureInitialized<T>() async {
+  /// Ensures that the CozyData instance is initialized.
+  /// If not initialized, it calls the initialize method.
+  static void _ensureInitialized<T>() async {
     if (!_isInitialized) {
-      await initialize(schemas: schema);
-    }
-    if (!_isIdInitialized) {
-      _idTypeInt = await Utils.getIdIsInit<T>();
+      await initialize(
+          mappers: _mappers,
+          engine: _engine,
+          shouldDropTableIfExistsButNoInit: _shouldDropTableIfExistsButNoInit,
+          showLogs: _showLogs,
+          path: _path);
     }
   }
 
-  /// Retrieves a [CozyQueryListener] for querying data.
+  /// Returns a query listener for the specified model type.
+  /// If the query listener is already cached, it returns the cached listener.
+  /// If the listener is disposed, it removes it from the cache and creates a new one.
   ///
-  /// {@template query_listener}
-  /// Use this method to obtain a listener for querying the database
-  /// with various filtering, sorting, and distinct options. The [T] type
-  /// parameter must match the model type being queried.
-  ///
-  /// An [Exception] will be thrown if no model type is provided.
-  ///
-  /// * [sortByProperties] is a list of [SortProperty] objects that define the sorting order.
-  /// example: [SortProperty(property: 0, sort: Sort.desc)]
-  /// property is the index of the property in the model class used for sorting.
-  /// if you have a model class like this:
-  /// class Person {
-  ///  final String name;
-  /// final int age;
-  /// }
-  /// and you want to sort by name, you would use [SortProperty(property: 0, sort: Sort.desc)]
-  /// if you want to sort by age, you would use [SortProperty(property: 1, sort: Sort.desc)]
-  ///
-  /// * [distinctByProperties] is a list of [DistinctProperty] objects that define the distinct properties.
-  /// example: [DistinctProperty(property: 0)]
-  /// property is the index of the property in the model class used for distinct values.
-  /// same example as above, if you want to get distinct values by name, you would use [DistinctProperty(property: 0)]
-  ///
-  /// * [objectFilters] is a list of [ObjectFilter] objects that define the filter conditions based on an embedded object.
-  /// example: [ObjectFilter(property: 0, filter: Filter.equals('name', 'John'))]
-  /// property is the index of the property in the model class used for filtering.
-  /// filter is the filter condition to apply to the property.
-  ///
-  /// * [filterCondition] is a [Filter] object that defines the filter condition for the query.
-  /// example: EqualCondition(property: 0, value: "Fode"),
-  /// posibilities are:{
-  /// EqualCondition, GreaterCondition, GreaterOrEqualCondition, LessCondition, LessOrEqualCondition,
-  /// BetweenCondition, StartsWithCondition, EndsWithCondition, ContainsCondition, MatchesCondition,
-  /// IsNullCondition, AndGroup, OrGroup, ObjectFilter
-  /// }
-  ///
-  /// {@endtemplate}
+  /// Example usage:
+  /// ```dart
+  /// final queryListener = CozyData.queryListener<MyModel>();
+  /// ```
   static CozyQueryListener<T> queryListener<T>({
     int? limit,
     int? offset,
@@ -150,7 +134,7 @@ class CozyData {
   }) {
     if (T == dynamic) {
       throw Exception(
-          'Cannot query without model Data Type. Please provide a concrete model type.\nExample: CozyData.query<ModelData>()');
+          'Cannot query without model Data Type. Please provide a concrete model type.\nExample: CozyData.queryListener<ModelData>()');
     }
     _ensureInitialized<T>();
 
@@ -161,7 +145,7 @@ class CozyData {
     /// if it is not, create a new one and cache it
     /// if it is disposed, remove it from the cache
     if (_queryCache.containsKey(queryKey)) {
-      final queryL = _queryCache[queryKey] as CozyQueryListener<T>;
+      final queryL = _queryCache[queryKey]!.listner as CozyQueryListener<T>;
       if (queryL._isDisposed) {
         _queryCache.remove(queryKey);
       } else {
@@ -169,124 +153,223 @@ class CozyData {
       }
     }
 
-    return _queryCache.putIfAbsent(
-      queryKey,
-      () => CozyQueryListener<T>(
-        isar: _isar!,
-        controller: controller,
-        limit: limit,
-        offset: offset,
-      ),
-    ) as CozyQueryListener<T>;
-  }
-
-  /// Saves a model [T] to the database, either inserting or updating.
-  static Future<T> save<T>(T model) async {
-    await _ensureInitialized<T>();
-
-    await _isar!.write((isar) async {
-      if (_idTypeInt) {
-        isar.collection<int, T>().put(model);
-      } else {
-        isar.collection<String, T>().put(model);
-      }
-    });
-    return model;
-  }
-
-  /// Fetches a list of models [T] from the database with optional query options.
-  static Future<List<T>> fetch<T>({
-    int? limit,
-    int? offset,
-    Filter? filterCondition,
-    List<SortProperty>? sortByProperties,
-    List<DistinctProperty>? distinctByProperties,
-    ObjectFilter? objectFilter,
-  }) async {
-    await _ensureInitialized<T>();
-
-    IsarCollection<dynamic, T> collection;
-    if (_idTypeInt) {
-      collection = _isar!.collection<int, T>();
-    } else {
-      collection = _isar!.collection<String, T>();
+    final mapper = _mapperCache[T.toString()];
+    if (mapper == null) {
+      final msg =
+          "Mapper not found for type: $T, Please initialize the class in CozyData.initialize(mappers: [ModelMapper()])";
+      Utils.log(showLogs: true, msg: msg, isError: true);
+      throw Exception(msg);
     }
 
-    final q = QueryBuilder.apply<T, T, QAfterFilterCondition>(
-        collection.where(), (query) {
-      query = query.copyWith(
-          sortByProperties: sortByProperties,
-          distinctByProperties: distinctByProperties);
-      if (filterCondition != null) {
-        return query.addFilterCondition(filterCondition);
-      } else if (objectFilter != null) {
-        return query.addFilterCondition(objectFilter);
-      } else {
-        return query;
-      }
-    });
-    return q.findAll();
+    return _queryCache
+        .putIfAbsent(
+            queryKey,
+            () => _CozyReference(
+                  mapper: mapper,
+                  listner: CozyQueryListener<T>(
+                    db: _db!,
+                    controller: controller,
+                    limit: limit,
+                    offset: offset,
+                    mapper: mapper,
+                  ),
+                ))
+        .listner as CozyQueryListener<T>;
   }
 
-  static Future<T?> findById<T>({required dynamic id}) async {
-    await _ensureInitialized<T>();
+  /// Saves the provided data to the database.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// final savedData = await CozyData.save<MyModel>(myModelInstance);
+  /// ```
+  static Future<T> save<T>(T data) async {
+    final (encodeJson, _) = await _checker<T>(data);
+    final flattenedJson = flattenJson(encodeJson);
+    await _db!.save<T>(data: flattenedJson);
+    return data;
+  }
 
-    /// Check if the id is of the correct type
-    if (_idTypeInt && id is! int || !_idTypeInt && id is! String) {
-      throw ('id type of ${T.toString()} must be ${_idTypeInt ? 'int' : 'string'} but was ${id.runtimeType} on [CozyData.findById<${T.toString()}>(id: $id)]');
+  /// Checks the provided data and returns its JSON representation and primary key value.
+  /// Throws an exception if the mapper is not found or if the data type does not match.
+
+  static Future<(Map<String, dynamic>, String)> _checker<T>(T data) async {
+    _ensureInitialized<T>();
+    final mapper = _mapperCache[T.toString()];
+    if (mapper == null) {
+      throw Exception(
+          'Mapper not found for type: $T, Please initialize in CozyData.initialize(mappers: [ModelMapper()])');
     }
 
-    IsarCollection<dynamic, T> collection;
-    if (_idTypeInt) {
-      collection = _isar!.collection<int, T>();
-    } else {
-      collection = _isar!.collection<String, T>();
+    if ((data as dynamic).runtimeType.toString() != T.toString()) {
+      throw Exception('Data type mismatch: ${data.runtimeType} is not $T');
     }
+    final encodeJson =
+        jsonDecode(mapper.encodeJson<T>(data)) as Map<String, dynamic>;
+    if (!(encodeJson).containsKey(Utils.persistentModelID)) {
+      throw Exception(
+          'Data does not have a ${Utils.persistentModelID} field defined and it is set as primary key');
+    }
+    String idValue = encodeJson[Utils.persistentModelID].toString();
 
-    return collection.get(id);
+    return (encodeJson, idValue);
   }
 
-  /// Updates a model [T] in the database, re-saving it.
-  static Future<T> update<T>(T model) async {
-    return await save(model);
+  /// Deletes the provided data from the database.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// await CozyData.delete<MyModel>(myModelInstance);
+  /// ```
+  static Future<void> delete<T>(T data) async {
+    final (_, idValue) = await _checker<T>(data);
+
+    await _db!.delete<T>(where: Utils.persistentModelID, whereArgs: [idValue]);
   }
 
-  /// Deletes a specific model [T] by its unique identifier.
-  static Future<void> delete<T>({required dynamic id}) async {
+  /// Updates the provided data in the database.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// await CozyData.update<MyModel>(myModelInstance);
+  /// ```
+  static Future<void> update<T>(T data) async {
+    final (encodeJson, pKValue) = await _checker<T>(data);
+    final flattenedJson = flattenJson(encodeJson);
+    await _db!.update<T>(
+        where: Utils.persistentModelID,
+        whereArgs: [pKValue],
+        data: flattenedJson);
+  }
+
+  /// Fetches data from the database based on the provided query builder and limits.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// final fetchedData = await CozyData.fetch<MyModel>(limit: 10, offset: 0);
+  /// ```
+  static Future<List<T>> fetch<T>(
+      {CozyQueryBuilder? customBuilder, int? limit, int? offset}) async {
     if (T == dynamic) {
       throw Exception(
-          'Cannot delete without model Data Type. Please provide a concrete model type.Example: [CozyData.delete<ModelData>(id: id)]');
+          'Cannot query without model Data Type. Please provide a concrete model type.\nExample: CozyData.queryListener<ModelData>()');
     }
-
-    await _ensureInitialized<T>();
-
-    /// Check if the id is of the correct type
-    if (_idTypeInt && id is! int || !_idTypeInt && id is! String) {
-      throw ('id type of ${T.toString()} must be ${_idTypeInt ? 'int' : 'string'} but was ${id.runtimeType} on [CozyData.delete<${T.toString()}>(id: $id)]');
+    _ensureInitialized<T>();
+    final mapper = _mapperCache[T.toString()];
+    if (mapper == null) {
+      final msg =
+          "Mapper not found for type: $T, Please initialize the class in CozyData.initialize(mappers: [ModelMapper()])";
+      Utils.log(showLogs: true, msg: msg, isError: true);
+      throw Exception(msg);
     }
-    await _isar!.write((isar) async {
-      if (_idTypeInt) {
-        isar.collection<int, T>().delete(id);
-      } else {
-        isar.collection<String, T>().delete(id);
-      }
-    });
+    final query = customBuilder?.build() ??
+        _QueryBuilder(
+          table: T.toString(),
+          limit: limit,
+          offset: offset,
+        ).build();
+
+    final List<Map<String, dynamic>> maps = await _db!.rawQuery<T>(query);
+
+    final items = maps.map(
+      (e) {
+        return mapper.decodeMap<T>(unflattenJson(e));
+      },
+    ).toList();
+    return items;
   }
 
-  /// Deletes all models [T] of the specified type from the database.
-  static Future<void> deleteAll<T>() async {
+  /// Fetches data by ID from the database.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// final dataById = await CozyData.fetcById<MyModel>(1);
+  /// ```
+  static Future<T?> fetcById<T>({required dynamic id}) async {
     if (T == dynamic) {
       throw Exception(
-          'Cannot delete without model Data Type. Please provide a concrete model type.Example: [CozyData.deleteAll<ModelData>()]');
+          'Cannot query without model Data Type. Please provide a concrete model type.\nExample: CozyData.queryListener<ModelData>()');
     }
-    await _ensureInitialized<T>();
+    _ensureInitialized<T>();
+    final mapper = _mapperCache[T.toString()];
+    if (mapper == null) {
+      final msg =
+          "Mapper not found for type: $T, Please initialize the class in CozyData.initialize(mappers: [ModelMapper()])";
+      Utils.log(showLogs: true, msg: msg, isError: true);
+      throw Exception(msg);
+    }
+    final query = _QueryBuilder(
+      table: T.toString(),
+      whereGroups: [
+        PredicateGroup(
+          predicates: [Predicate.equals(Utils.persistentModelID, id)],
+        ),
+      ],
+    ).build();
 
-    await _isar!.write((isar) async {
-      if (_idTypeInt) {
-        isar.collection<int, T>().clear();
-      } else {
-        isar.collection<String, T>().clear();
-      }
-    });
+    final List<Map<String, dynamic>> maps = await _db!.rawQuery<T>(query);
+
+    final items = maps.map(
+      (e) {
+        return mapper.decodeMap<T>(unflattenJson(e));
+      },
+    ).toList();
+    T? data;
+    if (items.isNotEmpty) {
+      data = items.first;
+    } else {
+      Utils.log(showLogs: _showLogs, msg: 'No data found for id: $id');
+    }
+
+    return data;
+  }
+
+  /// Drops the table for the provided model type.
+  ///
+  /// Example usage:
+  /// ```dart
+  /// await CozyData.dropTable<MyModel>();
+  /// ```
+  static Future<void> dropTable<T>() async {
+    _ensureInitialized<T>();
+    final mapper = _mapperCache[T.toString()];
+    if (mapper == null) {
+      final msg =
+          "Mapper not found for type: $T, Please initialize the class in CozyData .initialize(mappers: [ModelMapper()])";
+      Utils.log(showLogs: true, msg: msg, isError: true);
+      throw Exception(msg);
+    }
+    await _db!.dropTable<T>();
+    _mapperCache.remove(T.toString());
+    _queryCache.remove(T.toString());
+    return;
+  }
+
+  /// Drops all tables in the database.
+  /// This method should be used with caution as it will delete all data in the database.
+  /// Example usage:
+  /// ```dart
+  /// await CozyData.dropAllTables();
+  /// ```
+  static Future<void> dropAllTables() async {
+    for (var mapper in _mapperCache.values) {
+      await _db!.dropTable(tableName: mapper.id);
+    }
+    _mapperCache.clear();
+    _queryCache.clear();
+  }
+
+  /// Closes the database connection and clears the cache.
+  /// This method should be called when the database is no longer needed.
+  /// It is useful for cleaning up resources and preventing memory leaks.
+  /// Example usage:
+  /// ```dart
+  /// CozyData.cleanAndCloseDb();
+  /// ```
+  static void cleanAndCloseDb() {
+    _db = null;
+    _queryCache.clear();
+    _mapperCache.clear();
+    _isInitialized = false;
   }
 }
