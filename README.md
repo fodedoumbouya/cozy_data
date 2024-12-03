@@ -26,7 +26,7 @@
 > #### CozyData:
 
 > 1. SwiftData for flutter.
-> 2. Support sqlite, sqlite3, inMemory data Storage
+> 2. Support sqflite, sqlite3, inMemory data Storage
 
 A Swift-inspired persistent data management solution for Flutter. CozyData provides a simple, powerful, and type-safe way to persist your app's models and automatically update your UI when data changes.
 

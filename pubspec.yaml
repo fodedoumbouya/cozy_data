@@ -1,6 +1,6 @@
 name: cozy_data
 description: A Swift-inspired persistent data management solution for Flutter. Provides simple, powerful, and type-safe way to persist your app's models with automatic UI updates.
-version: 0.0.1-dev.4
+version: 1.0.0
 repository: https://github.com/fodedoumbouya/cozy_data
 issue_tracker: https://github.com/fodedoumbouya/cozy_data/issues
 
