@@ -287,7 +287,7 @@ class CozyData {
   /// ```dart
   /// final dataById = await CozyData.fetcById<MyModel>(1);
   /// ```
-  static Future<T?> fetcById<T>({required dynamic id}) async {
+  static Future<T?> fetcById<T>({required dynamic persistentModelID}) async {
     if (T == dynamic) {
       throw Exception(
           'Cannot query without model Data Type. Please provide a concrete model type.\nExample: CozyData.queryListener<ModelData>()');
@@ -304,7 +304,9 @@ class CozyData {
       table: T.toString(),
       whereGroups: [
         PredicateGroup(
-          predicates: [Predicate.equals(Utils.persistentModelID, id)],
+          predicates: [
+            Predicate.equals(Utils.persistentModelID, persistentModelID)
+          ],
         ),
       ],
     ).build();
@@ -320,7 +322,9 @@ class CozyData {
     if (items.isNotEmpty) {
       data = items.first;
     } else {
-      Utils.log(showLogs: _showLogs, msg: 'No data found for id: $id');
+      Utils.log(
+          showLogs: _showLogs,
+          msg: 'No data found for persistentModelID: $persistentModelID');
     }
 
     return data;

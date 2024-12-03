@@ -19,7 +19,7 @@ part of cozy_data;
 /// Example Usage:
 /// ```dart
 /// final query = CozyQueryBuilder<User>()
-///   .select(['id', 'name', 'email'])
+///   .select(['persistentModelID', 'name', 'email'])
 ///   .join(Join(
 ///     table: 'userRoles',
 ///     condition: 'users.id = userRoles.user_id',
@@ -328,22 +328,22 @@ class CozyQueryBuilder<T> {
   /// This example shows a complex query that combines multiple features:
   /// ```dart
   /// class User {
-  ///   int id;
+  ///   int persistentModelID;
   ///   String name;
   ///   int age;
   ///   String status;
   ///   List<String> roles;
-  /// User({this.id, this.name, this.age, this.status, this.roles});
+  /// User({this.persistentModelID, this.name, this.age, this.status, this.roles});
   /// }
   ///
   /// void exampleQueryUsage() {
   /// final complexUserQuery = CozyQueryBuilder<User>()
   ///     // Select specific fields
-  ///     .select(['id', 'name', 'email'])
+  ///     .select(['persistentModelID', 'name', 'email'])
   ///     // Left join with user roles
   ///     .join(Join(
   ///       table: 'userRoles',
-  ///       condition: 'users.id = userRoles.user_id',
+  ///       condition: 'users.persistentModelID = userRoles.persistentModelID',
   ///       type: JoinType.left
   ///     ))
   ///     // Complex filtering with nested conditions

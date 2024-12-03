@@ -114,7 +114,7 @@ the `RecipeMapper` will be generate in `.mapper.dart` file
 
 ```dart
 final newRecipe = Recipe(
-  id: CozyId.cozyPersistentModelIDString(),
+  persistentModelID: CozyId.cozyPersistentModelIDString(),
   name: 'salad',
   ingredients: [
     Ingredients(name: 'Tomato',quantity: 2,cookStyle: CookStyle.fry),
@@ -191,7 +191,7 @@ final recipes = await CozyData.fetch<Recipe>();
 ### Find by ID
 
 ```dart
-final recipe = await CozyData.fetcById<Recipe>(id: id);
+final recipe = await CozyData.fetcById<Recipe>(persistentModelID: id);
 
 ```
 
