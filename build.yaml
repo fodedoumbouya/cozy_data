@@ -1,6 +1,0 @@
-targets:
-  $default:
-    builders:
-      dart_mappable_builder:
-        enabled: true
-        options:

@@ -56,6 +56,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: any
+  dart_mappable_builder: any
 ```
 
 ## Usage
@@ -68,7 +69,7 @@ part 'recipe.mapper.dart';
 
 @MappableClass()
 class Recipe with RecipeMappable {
-  final String id;
+  final String persistentModelID; // This field is required for the cozy_data package to work
   String name;
   List<Ingredients>? ingredients;
 

@@ -42,7 +42,7 @@ class _RecipeViewDetailsState extends State<RecipeViewDetails> {
     // Initialize the recipe object with the provided recipe or a new one
     recipe = widget.recipe ??
         Recipe(
-          id: CozyId.cozyPersistentModelIDString(),
+          persistentModelID: CozyId.cozyPersistentModelIDString(),
           name: '',
         );
     super.initState();

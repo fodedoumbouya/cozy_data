@@ -4,13 +4,14 @@ part 'person.mapper.dart';
 
 @MappableClass()
 class Person with PersonMappable {
-  final int id;
+  final int
+      persistentModelID; // This field is required for the cozy_data package to work
 
   String? name;
   int? age;
   Car? car;
 
-  Person({required this.id, this.name, this.age, this.car});
+  Person({required this.persistentModelID, this.name, this.age, this.car});
 }
 
 @MappableEnum()

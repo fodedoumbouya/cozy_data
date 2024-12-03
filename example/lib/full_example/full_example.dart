@@ -31,15 +31,15 @@ class _FullExampleState extends State<FullExample> {
   OrderBy _getSortFunction(SortOrder order) {
     switch (order) {
       case SortOrder.itemAsc:
-        return OrderBy("id", OrderDirection.asc);
+        return OrderBy("persistentModelID", OrderDirection.asc);
       case SortOrder.itemDesc:
-        return OrderBy("id", OrderDirection.desc);
+        return OrderBy("persistentModelID", OrderDirection.desc);
       case SortOrder.nameAsc:
         return OrderBy("name", OrderDirection.asc);
       case SortOrder.nameDesc:
         return OrderBy("name", OrderDirection.desc);
       default:
-        return OrderBy("id", OrderDirection.asc);
+        return OrderBy("persistentModelID", OrderDirection.asc);
     }
   }
 

@@ -71,8 +71,9 @@ class PersonMapper extends ClassMapperBase<Person> {
   @override
   final String id = 'Person';
 
-  static int _$id(Person v) => v.id;
-  static const Field<Person, int> _f$id = Field('id', _$id);
+  static int _$persistentModelID(Person v) => v.persistentModelID;
+  static const Field<Person, int> _f$persistentModelID =
+      Field('persistentModelID', _$persistentModelID);
   static String? _$name(Person v) => v.name;
   static const Field<Person, String> _f$name = Field('name', _$name, opt: true);
   static int? _$age(Person v) => v.age;
@@ -82,7 +83,7 @@ class PersonMapper extends ClassMapperBase<Person> {
 
   @override
   final MappableFields<Person> fields = const {
-    #id: _f$id,
+    #persistentModelID: _f$persistentModelID,
     #name: _f$name,
     #age: _f$age,
     #car: _f$car,
@@ -90,7 +91,7 @@ class PersonMapper extends ClassMapperBase<Person> {
 
   static Person _instantiate(DecodingData data) {
     return Person(
-        id: data.dec(_f$id),
+        persistentModelID: data.dec(_f$persistentModelID),
         name: data.dec(_f$name),
         age: data.dec(_f$age),
         car: data.dec(_f$car));
@@ -143,7 +144,7 @@ extension PersonValueCopy<$R, $Out> on ObjectCopyWith<$R, Person, $Out> {
 abstract class PersonCopyWith<$R, $In extends Person, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
   CarCopyWith<$R, Car, Car>? get car;
-  $R call({int? id, String? name, int? age, Car? car});
+  $R call({int? persistentModelID, String? name, int? age, Car? car});
   PersonCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
 
@@ -158,19 +159,20 @@ class _PersonCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Person, $Out>
       $value.car?.copyWith.$chain((v) => call(car: v));
   @override
   $R call(
-          {int? id,
+          {int? persistentModelID,
           Object? name = $none,
           Object? age = $none,
           Object? car = $none}) =>
       $apply(FieldCopyWithData({
-        if (id != null) #id: id,
+        if (persistentModelID != null) #persistentModelID: persistentModelID,
         if (name != $none) #name: name,
         if (age != $none) #age: age,
         if (car != $none) #car: car
       }));
   @override
   Person $make(CopyWithData data) => Person(
-      id: data.get(#id, or: $value.id),
+      persistentModelID:
+          data.get(#persistentModelID, or: $value.persistentModelID),
       name: data.get(#name, or: $value.name),
       age: data.get(#age, or: $value.age),
       car: data.get(#car, or: $value.car));

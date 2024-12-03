@@ -57,14 +57,14 @@ class CozyData {
   /// * [engine] - The database engine to use (defaults to `CozyEngine.sqlite3`)
   /// * [shouldDropTableIfExistsButNoInit] - A flag to drop tables if they exist but are not initialized (defaults to `false`)
   /// * [showLogs] - A flag to enable logging (defaults to `false`)
-  /// * [persistentModelID] - The field name to use as the primary key (defaults to 'id')
+  /// * [persistentModelID] - The field name to use as the primary key (defaults to 'persistentModelID')
   /// * [path] - The path to the database file (defaults to the application documents directory)
   static Future<void> initialize(
       {required List<ClassMapperBase> mappers,
       CozyEngine engine = CozyEngine.sqlite3,
       bool shouldDropTableIfExistsButNoInit = false,
       bool showLogs = false,
-      String? persistentModelID = 'id',
+      String? persistentModelID,
       String? path}) async {
     if (_isInitialized) return;
     _mappers = mappers;
@@ -80,7 +80,9 @@ class CozyData {
       _shouldDropTableIfExistsButNoInit = shouldDropTableIfExistsButNoInit;
       final p = path ?? (await getApplicationDocumentsDirectory()).path;
       _path = p;
-      Utils.persistentModelID = persistentModelID ?? 'id';
+      if (persistentModelID != null) {
+        Utils.persistentModelID = persistentModelID;
+      }
 
       _db = await InitDatabase.getDb(
         mappers: mappers,

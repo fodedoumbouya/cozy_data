@@ -9,9 +9,9 @@ part of cozy_data;
 class Utils {
   /// Default identifier field used for persistent model entities
   ///
-  /// This constant defines the standard field name 'id' that should be used
+  /// This constant defines the standard field name 'persistentModelID' that should be used
   /// as the primary identifier in persistent data models
-  static String persistentModelID = 'id';
+  static String persistentModelID = 'persistentModelID';
 
   /// Logs messages with configurable visibility and error status
   ///

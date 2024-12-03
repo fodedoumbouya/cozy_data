@@ -169,6 +169,14 @@ class Sqlite implements Db {
           for (var field in mapper.fields.entries) {
             data[field.value.name] = null;
           }
+          if (mapper.id.isEmpty) {
+            Utils.log(
+                msg:
+                    'Table name is empty in mapper. Skipping table creation\nPlease make sure @MappableClass(uniqueId: "") is set and not empty',
+                showLogs: _showLogs,
+                isError: true);
+            continue;
+          }
           await createTables(table: mapper.id, data: data);
           Utils.log(
               msg: '🥳 Table ${mapper.id} created 🥳', showLogs: _showLogs);

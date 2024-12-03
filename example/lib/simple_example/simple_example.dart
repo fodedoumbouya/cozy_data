@@ -81,7 +81,7 @@ class _SimpleExampleState extends State<SimpleExample> {
 
           /// Create a new person with the generated id
           final person = Person(
-            id: id,
+            persistentModelID: id,
             name: _personNames[Random().nextInt(_personNames.length)],
             age: Random().nextInt(100),
             car: Car(Random().nextDouble() * 100,

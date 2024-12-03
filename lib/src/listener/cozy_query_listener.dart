@@ -107,11 +107,18 @@ class CozyQueryListener<T> with ChangeNotifier {
     try {
       final query = customQuery ?? _buildQuery();
       final List<Map<String, dynamic>> maps = await _db.rawQuery<T>(query);
-      _items = maps.map(
-        (e) {
-          return _mapper.decodeMap<T>(unflattenJson(e));
-        },
-      ).toList();
+      try {
+        _items = maps.map(
+          (e) {
+            return _mapper.decodeMap<T>(unflattenJson(e));
+          },
+        ).toList();
+      } catch (e) {
+        if (e is MapperException && e.message.contains('is missing')) {
+          throw Exception(
+              'Error decoding ${T.toString()} from database. This may occur if a required field has been added to the model but does not exist in the database. Error: $e');
+        }
+      }
       notifyListeners();
     } catch (e) {
       rethrow;

@@ -9,10 +9,13 @@ import 'simple_example/model/person.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await CozyData.initialize(showLogs: true, mappers: [
-    PersonMapper.ensureInitialized(),
-    RecipeMapper.ensureInitialized()
-  ]);
+  await CozyData.initialize(
+      showLogs: true,
+      engine: CozyEngine.memory,
+      mappers: [
+        PersonMapper.ensureInitialized(),
+        RecipeMapper.ensureInitialized()
+      ]);
   runApp(const MyApp());
 }
 

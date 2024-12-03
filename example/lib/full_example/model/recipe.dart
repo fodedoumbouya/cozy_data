@@ -3,11 +3,13 @@ part 'recipe.mapper.dart';
 
 @MappableClass()
 class Recipe with RecipeMappable {
-  final String id;
+  final String
+      persistentModelID; // This field is required for the cozy_data package to work
   String name;
   List<Ingredients>? ingredients;
 
-  Recipe({required this.id, required this.name, this.ingredients});
+  Recipe(
+      {required this.persistentModelID, required this.name, this.ingredients});
 }
 
 @MappableClass()

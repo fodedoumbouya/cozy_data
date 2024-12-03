@@ -71,8 +71,9 @@ class RecipeMapper extends ClassMapperBase<Recipe> {
   @override
   final String id = 'Recipe';
 
-  static String _$id(Recipe v) => v.id;
-  static const Field<Recipe, String> _f$id = Field('id', _$id);
+  static String _$persistentModelID(Recipe v) => v.persistentModelID;
+  static const Field<Recipe, String> _f$persistentModelID =
+      Field('persistentModelID', _$persistentModelID);
   static String _$name(Recipe v) => v.name;
   static const Field<Recipe, String> _f$name = Field('name', _$name);
   static List<Ingredients>? _$ingredients(Recipe v) => v.ingredients;
@@ -81,14 +82,14 @@ class RecipeMapper extends ClassMapperBase<Recipe> {
 
   @override
   final MappableFields<Recipe> fields = const {
-    #id: _f$id,
+    #persistentModelID: _f$persistentModelID,
     #name: _f$name,
     #ingredients: _f$ingredients,
   };
 
   static Recipe _instantiate(DecodingData data) {
     return Recipe(
-        id: data.dec(_f$id),
+        persistentModelID: data.dec(_f$persistentModelID),
         name: data.dec(_f$name),
         ingredients: data.dec(_f$ingredients));
   }
@@ -141,7 +142,10 @@ abstract class RecipeCopyWith<$R, $In extends Recipe, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
   ListCopyWith<$R, Ingredients,
       IngredientsCopyWith<$R, Ingredients, Ingredients>>? get ingredients;
-  $R call({String? id, String? name, List<Ingredients>? ingredients});
+  $R call(
+      {String? persistentModelID,
+      String? name,
+      List<Ingredients>? ingredients});
   RecipeCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
 
@@ -159,15 +163,19 @@ class _RecipeCopyWithImpl<$R, $Out> extends ClassCopyWithBase<$R, Recipe, $Out>
               (v) => call(ingredients: v))
           : null;
   @override
-  $R call({String? id, String? name, Object? ingredients = $none}) =>
+  $R call(
+          {String? persistentModelID,
+          String? name,
+          Object? ingredients = $none}) =>
       $apply(FieldCopyWithData({
-        if (id != null) #id: id,
+        if (persistentModelID != null) #persistentModelID: persistentModelID,
         if (name != null) #name: name,
         if (ingredients != $none) #ingredients: ingredients
       }));
   @override
   Recipe $make(CopyWithData data) => Recipe(
-      id: data.get(#id, or: $value.id),
+      persistentModelID:
+          data.get(#persistentModelID, or: $value.persistentModelID),
       name: data.get(#name, or: $value.name),
       ingredients: data.get(#ingredients, or: $value.ingredients));
 
