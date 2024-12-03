@@ -17,8 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/fodedoumbouya/cozy_data">Quickstart</a> •
-  <a href="https://github.com/fodedoumbouya/cozy_data">Documentation</a> •
+  <a href="https://cozydata.web.app/docs/getting-started/installation/">Quickstart</a> •
+  <a href="https://cozydata.web.app/">Documentation</a> •
   <a href="https://github.com/fodedoumbouya/cozy_data/tree/main/example">Sample Apps</a> •
   <a href="https://pub.dev/packages/cozy_data">Pub.dev</a>
 </p>
